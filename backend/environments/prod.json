@@ -1,0 +1,13 @@
+{
+  "Parameters": {
+    "Environment": "prod",
+    "AllowedOrigins": "https://yourdomain.com"
+  },
+  "Tags": {
+    "Project": "AI-Document-Assistant",
+    "Environment": "prod",
+    "ManagedBy": "SAM",
+    "Owner": "YourName",
+    "CostCenter": "Portfolio"
+  }
+}

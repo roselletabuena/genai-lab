@@ -1,0 +1,13 @@
+{
+  "Parameters": {
+    "Environment": "dev",
+    "AllowedOrigins": "*"
+  },
+  "Tags": {
+    "Project": "AI-Document-Assistant",
+    "Environment": "dev",
+    "ManagedBy": "SAM",
+    "Owner": "YourName",
+    "CostCenter": "Portfolio"
+  }
+}
