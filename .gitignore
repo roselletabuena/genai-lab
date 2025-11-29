@@ -1,0 +1,108 @@
+########################################
+# OS / EDITOR FILES
+########################################
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+
+# VSCode
+.vscode/
+.history/
+*.code-workspace
+
+# JetBrains / IntelliJ
+.idea/
+
+########################################
+# ENVIRONMENT / SECRETS
+########################################
+.env
+.env.local
+.env.*.local
+*.env.backup
+*.secret
+.secret/
+secrets/
+
+# Keep the example file
+!.env.example
+
+########################################
+# FRONTEND (VITE + REACT + TS)
+########################################
+# node modules
+frontend/node_modules/
+
+# build output
+frontend/dist/
+frontend/.vite/
+
+# package managers
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# lock files (optional)
+# Uncomment ONLY if you don't want to track lock files
+# frontend/package-lock.json
+# frontend/yarn.lock
+
+########################################
+# BACKEND (PYTHON + POETRY + SAM)
+########################################
+# Python cache
+backend/__pycache__/
+backend/**/*.py[cod]
+backend/*.pyc
+backend/.Python
+
+# Virtual environments
+backend/venv/
+backend/.venv/
+backend/env/
+
+# Poetry cache
+backend/.cache/pypoetry/
+
+# Python tooling
+backend/.mypy_cache/
+backend/.pytest_cache/
+backend/.coverage
+
+# SAM build
+backend/.aws-sam/
+backend/build/
+backend/dist/
+backend/target/
+
+########################################
+# INFRASTRUCTURE (AWS CDK)
+########################################
+# node modules
+infrastructure/node_modules/
+
+# CDK output
+infrastructure/cdk.out/
+infrastructure/dist/
+
+########################################
+# DOCKER (commented out since not using now)
+########################################
+# docker-compose.override.yml
+# *.dockerignore
+# *.containerignore
+
+########################################
+# MISC
+########################################
+# lock file backups
+*.lock.backup
+
+# swap files
+*.swp
+*.swo
+
+# logs
+logs/
+*.log
