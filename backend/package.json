@@ -10,13 +10,6 @@
     "test": "npm run build:ts && tsc -p test/tsconfig.json && c8 node --test -r ts-node/register \"test/**/*.ts\"",
     "start": "npm run build:ts && fastify start -l info dist/app.js",
     "build:ts": "tsc",
-    "watch:ts": "tsc -w",
-    "setup": "powershell -ExecutionPolicy Bypass -File ./scripts/setup-aws.ps1",
-    "deploy:dev": "powershell -ExecutionPolicy Bypass -File ./scripts/deploy.ps1 dev",
-    "deploy:prod": "powershell -ExecutionPolicy Bypass -File ./scripts/deploy.ps1 prod",
-    "local": "echo 'Local testing not available on Windows - use WSL or deploy to AWS' && exit 1",
-    "validate": "sam validate --lint",
-    "sam:build": "npm run build && sam build",
     "dev": "npm run build:ts && concurrently -k -p \"[{name}]\" -n \"TypeScript,App\" -c \"yellow.bold,cyan.bold\" \"npm:watch:ts\" \"npm:dev:start\"",
     "dev:start": "fastify start --ignore-watch=.ts$ -w -l info -P dist/app.js"
   },

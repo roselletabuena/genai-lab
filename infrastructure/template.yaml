@@ -1,0 +1,177 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: AI Document Assistant - RAG System with Bedrock
+
+# ==========================================
+# PARAMETERS
+# ==========================================
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Description: Deployment environment
+
+  AllowedOrigins:
+    Type: String
+    Default: "*"
+    Description: CORS allowed origins (use specific domain in prod)
+
+# ==========================================
+# GLOBALS
+# ==========================================
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Timeout: 30
+    MemorySize: 512
+    Architectures:
+      - arm64
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref Environment
+        DOCUMENTS_TABLE: !Ref DocumentsTable
+        CHUNKS_TABLE: !Ref ChunksTable
+        DOCUMENTS_BUCKET: !Ref DocumentsBucket
+        AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
+    Tracing: Active
+
+  Api:
+    Cors:
+      AllowOrigin: !Sub "'${AllowedOrigins}'"
+      AllowHeaders: "'Content-Type,X-Api-Key,Authorization'"
+      AllowMethods: "'GET,POST,DELETE,OPTIONS'"
+
+# ==========================================
+# RESOURCES
+# ==========================================
+Resources:
+  # ------------------------------------------
+  # S3 Bucket
+  # ------------------------------------------
+  DocumentsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "ai-doc-assistant-${Environment}-${AWS::AccountId}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersions
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: 30
+      CorsConfiguration:
+        CorsRules:
+          - AllowedOrigins:
+              - !Ref AllowedOrigins
+            AllowedMethods:
+              - GET
+              - PUT
+              - POST
+            AllowedHeaders:
+              - "*"
+            MaxAge: 3600
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: AI-Document-Assistant
+
+  # ------------------------------------------
+  # DynamoDB Tables
+  # ------------------------------------------
+  DocumentsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "Documents-${Environment}"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: documentId
+          AttributeType: S
+        - AttributeName: uploadedAt
+          AttributeType: N
+      KeySchema:
+        - AttributeName: documentId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: UploadedAtIndex
+          KeySchema:
+            - AttributeName: uploadedAt
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  ChunksTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "Chunks-${Environment}"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: chunkId
+          AttributeType: S
+        - AttributeName: documentId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: chunkId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: DocumentIdIndex
+          KeySchema:
+            - AttributeName: documentId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+
+  # ------------------------------------------
+  # Lambda Functions
+  # ------------------------------------------
+  UploadDocumentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "ai-doc-assistant-upload-${Environment}"
+      CodeUri: ../backend/dist
+      Handler: handlers/uploadDocument.handler
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref DocumentsBucket
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DocumentsTable
+
+# ==========================================
+# OUTPUTS
+# ==========================================
+Outputs:
+  DocumentsBucketName:
+    Description: S3 bucket for documents
+    Value: !Ref DocumentsBucket
+
+  DocumentsTableName:
+    Description: DynamoDB Documents table
+    Value: !Ref DocumentsTable
+
+  ChunksTableName:
+    Description: DynamoDB Chunks table
+    Value: !Ref ChunksTable
+
+  Region:
+    Description: Deployment region
+    Value: !Ref AWS::Region
