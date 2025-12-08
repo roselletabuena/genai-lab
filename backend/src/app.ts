@@ -1,6 +1,8 @@
 import { join } from 'node:path'
 import AutoLoad, { AutoloadPluginOptions } from '@fastify/autoload'
 import { FastifyPluginAsync, FastifyServerOptions } from 'fastify'
+import fastifyEnv from '@fastify/env';
+import multipart from '@fastify/multipart';
 
 export interface AppOptions extends FastifyServerOptions, Partial<AutoloadPluginOptions> {
 
@@ -13,8 +15,22 @@ const app: FastifyPluginAsync<AppOptions> = async (
   fastify,
   opts
 ): Promise<void> => {
-  // Place here your custom code!
 
+  await fastify.register(fastifyEnv, {
+    dotenv: true,
+    schema: {
+      type: 'object',
+      required: [],
+      properties: {
+        LOCALSTACK_ENDPOINT: { type: 'string' },
+        AWS_REGION: { type: 'string' },
+        DOCUMENTS_BUCKET: { type: 'string' },
+        NODE_ENV: { type: 'string' },
+      }
+    }
+  })
+
+  await fastify.register(multipart);
   // Do not touch the following lines
 
   // This loads all plugins defined in plugins
