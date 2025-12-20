@@ -1,0 +1,54 @@
+name: Deploy Backend
+on:
+  push:
+    branches:
+      -main
+    paths: 
+      - 'backend/**'
+      - '.github/workflows/backend-deploy.yml'
+    workflow_dispatch: # Manual Trigger option
+
+jobs: 
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code 
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 
+        uses: actions/setup-node@v4
+        with: 
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-director: ./backend
+        run: npm ci
+
+      - name: Build TypeScript
+        working-directory: ./backend
+        run: npm run build
+
+      - name: Setup AWS SAM
+        uses: aws-actions/setup-sam@v2
+        with:
+          use-installer: true
+
+      - name: SAM Build
+        working-directory: ./infrastructure
+        run: sam build
+
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: SAM Deploy
+        working-directory: ./backend
+        run: |
+          sam deploy
