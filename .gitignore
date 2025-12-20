@@ -71,20 +71,11 @@ backend/.pytest_cache/
 backend/.coverage
 
 # SAM build
-backend/.aws-sam/
-backend/build/
-backend/dist/
-backend/target/
-
-########################################
-# INFRASTRUCTURE (AWS CDK)
-########################################
-# node modules
-infrastructure/node_modules/
-
-# CDK output
-infrastructure/cdk.out/
+infrastructure/.aws-sam/
+infrastructure/build/
 infrastructure/dist/
+infrastructure/target/
+
 
 ########################################
 # DOCKER (commented out since not using now)
