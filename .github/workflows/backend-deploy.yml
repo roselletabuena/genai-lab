@@ -2,11 +2,11 @@ name: Deploy Backend
 on:
   push:
     branches:
-      -main
-    paths: 
+      - main
+    paths:
       - 'backend/**'
       - '.github/workflows/backend-deploy.yml'
-    workflow_dispatch: # Manual Trigger option
+  workflow_dispatch: # Manual Trigger option
 
 jobs: 
   deploy:
@@ -24,7 +24,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
 
       - name: Install dependencies
-        working-director: ./backend
+        working-directory: ./backend
         run: npm ci
 
       - name: Build TypeScript
@@ -49,6 +49,6 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: SAM Deploy
-        working-directory: ./backend
+        working-directory: ./infrastructure
         run: |
           sam deploy
