@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: AI Document Assistant - RAG System with Bedrock
+Description: AI Document Assistant - RAG System Storage Layer
 
 # ==========================================
 # PARAMETERS
@@ -11,37 +11,13 @@ Parameters:
     Default: dev
     AllowedValues:
       - dev
+      - prod
     Description: Deployment environment
 
   AllowedOrigins:
     Type: String
     Default: "*"
-    Description: CORS allowed origins (use specific domain in prod)
-
-# ==========================================
-# GLOBALS
-# ==========================================
-Globals:
-  Function:
-    Runtime: nodejs20.x
-    Timeout: 30
-    MemorySize: 512
-    Architectures:
-      - arm64
-    Environment:
-      Variables:
-        ENVIRONMENT: !Ref Environment
-        DOCUMENTS_TABLE: !Ref DocumentsTable
-        CHUNKS_TABLE: !Ref ChunksTable
-        DOCUMENTS_BUCKET: !Ref DocumentsBucket
-        AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
-    Tracing: Active
-
-  Api:
-    Cors:
-      AllowOrigin: !Sub "'${AllowedOrigins}'"
-      AllowHeaders: "'Content-Type,X-Api-Key,Authorization'"
-      AllowMethods: "'GET,POST,DELETE,OPTIONS'"
+    Description: CORS allowed origins
 
 # ==========================================
 # RESOURCES
@@ -61,6 +37,10 @@ Resources:
         RestrictPublicBuckets: true
       VersioningConfiguration:
         Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
       LifecycleConfiguration:
         Rules:
           - Id: DeleteOldVersions
@@ -80,8 +60,6 @@ Resources:
       Tags:
         - Key: Environment
           Value: !Ref Environment
-        - Key: Project
-          Value: AI-Document-Assistant
 
   # ------------------------------------------
   # DynamoDB Tables
@@ -94,22 +72,26 @@ Resources:
       AttributeDefinitions:
         - AttributeName: documentId
           AttributeType: S
+        - AttributeName: userId
+          AttributeType: S
         - AttributeName: uploadedAt
           AttributeType: N
       KeySchema:
         - AttributeName: documentId
           KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: UploadedAtIndex
+        - IndexName: UserIdIndex
           KeySchema:
-            - AttributeName: uploadedAt
+            - AttributeName: userId
               KeyType: HASH
+            - AttributeName: uploadedAt
+              KeyType: RANGE
           Projection:
             ProjectionType: ALL
       StreamSpecification:
         StreamViewType: NEW_AND_OLD_IMAGES
-      PointInTimeRecoverySpecification:
-        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
       Tags:
         - Key: Environment
           Value: !Ref Environment
@@ -134,42 +116,71 @@ Resources:
               KeyType: HASH
           Projection:
             ProjectionType: ALL
+      SSESpecification:
+        SSEEnabled: true
       Tags:
         - Key: Environment
           Value: !Ref Environment
 
-
   # ------------------------------------------
-  # Lambda Functions
+  # IAM Role
   # ------------------------------------------
-  UploadDocumentFunction:
-    Type: AWS::Serverless::Function
+  AppRole:
+    Type: AWS::IAM::Role
     Properties:
-      FunctionName: !Sub "ai-doc-assistant-upload-${Environment}"
-      CodeUri: ../backend/dist
-      Handler: handlers/uploadDocument.handler
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
       Policies:
-        - S3CrudPolicy:
-            BucketName: !Ref DocumentsBucket
-        - DynamoDBCrudPolicy:
-            TableName: !Ref DocumentsTable
+        - PolicyName: AppAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "s3:GetObject"
+                  - "s3:PutObject"
+                  - "s3:DeleteObject"
+                Resource: !Sub "${DocumentsBucket.Arn}/*"
+              - Effect: Allow
+                Action:
+                  - "dynamodb:GetItem"
+                  - "dynamodb:PutItem"
+                  - "dynamodb:UpdateItem"
+                  - "dynamodb:DeleteItem"
+                  - "dynamodb:Query"
+                Resource:
+                  - !GetAtt DocumentsTable.Arn
+                  - !Sub "${DocumentsTable.Arn}/index/*"
+                  - !GetAtt ChunksTable.Arn
+                  - !Sub "${ChunksTable.Arn}/index/*"
+              - Effect: Allow
+                Action:
+                  - "bedrock:InvokeModel"
+                Resource: "*"
 
 # ==========================================
 # OUTPUTS
 # ==========================================
 Outputs:
   DocumentsBucketName:
-    Description: S3 bucket for documents
     Value: !Ref DocumentsBucket
 
   DocumentsTableName:
-    Description: DynamoDB Documents table
     Value: !Ref DocumentsTable
 
   ChunksTableName:
-    Description: DynamoDB Chunks table
     Value: !Ref ChunksTable
 
+  AppRoleArn:
+    Value: !GetAtt AppRole.Arn
+
   Region:
-    Description: Deployment region
     Value: !Ref AWS::Region

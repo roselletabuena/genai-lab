@@ -1,48 +1,12 @@
 version = 0.1
 
-# ==========================================
-# DEFAULT CONFIGURATION
-# ==========================================
-[default]
-[default.global.parameters]
-stack_name = "ai-doc-assistant"
-region = "ap-southeast-1"
-
-[default.build.parameters]
-cached = true
-parallel = true
-
-[default.validate.parameters]
-lint = true
-
 [default.deploy.parameters]
-capabilities = "CAPABILITY_IAM"
-confirm_changeset = false
+stack_name = "ai-document-assistant"
 resolve_s3 = true
-s3_prefix = "ai-doc-assistant"
-image_repositories = []
+s3_prefix = "ai-document-assistant"
+capabilities = "CAPABILITY_IAM"
 parameter_overrides = "Environment=\"dev\" AllowedOrigins=\"*\""
+image_repositories = []
 
-[default.package.parameters]
-resolve_s3 = true
-
-[default.sync.parameters]
-watch = true
-
-[default.local_start_api.parameters]
-warm_containers = "EAGER"
-
-[default.local_start_lambda.parameters]
-warm_containers = "EAGER"
-
-# ==========================================
-# DEV ENVIRONMENT
-# ==========================================
-[dev]
-[dev.deploy.parameters]
-stack_name = "ai-doc-assistant-dev"
-region = "ap-southeast-1"
-capabilities = "CAPABILITY_IAM"
-confirm_changeset = false
-parameter_overrides = "Environment=dev AllowedOrigins=*"
-tags = "Environment=dev Project=AI-Document-Assistant ManagedBy=SAM"
+[default.global.parameters]
+region = "us-east-1"
