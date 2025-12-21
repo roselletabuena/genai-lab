@@ -42,7 +42,7 @@ warm_containers = "EAGER"
 [dev.deploy.parameters]
 stack_name = "ai-doc-assistant-dev"
 region = "ap-southeast-1"
-resolve_s3 = true
+s3_bucket = "ai-doc-assistant-dev-010928183602"
 parameter_overrides = "Environment=dev AllowedOrigins=*"
 tags = "Environment=dev Project=AI-Document-Assistant ManagedBy=SAM"
 
