@@ -154,7 +154,6 @@ Resources:
       Environment:
         Variables:
           NODE_ENV: !Ref Environment
-          AWS_REGION: !Ref AWS::Region
           DOCUMENTS_BUCKET: !Ref DocumentsBucket
           DOCUMENTS_TABLE: !Ref DocumentsTable
           CHUNKS_TABLE: !Ref ChunksTable

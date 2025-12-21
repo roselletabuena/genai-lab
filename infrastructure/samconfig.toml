@@ -4,6 +4,7 @@ version = 0.1
 stack_name = "ai-document-assistant"
 resolve_s3 = true
 s3_prefix = "ai-document-assistant"
+region = "us-east-1"
 capabilities = "CAPABILITY_IAM"
 parameter_overrides = "Environment=\"dev\" AllowedOrigins=\"*\""
 image_repositories = []
