@@ -52,4 +52,4 @@ jobs:
       - name: SAM Deploy
         working-directory: ./infrastructure
         run: |
-          sam deploy --config-env dev
+          sam deploy
