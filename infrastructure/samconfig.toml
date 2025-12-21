@@ -46,24 +46,3 @@ capabilities = "CAPABILITY_IAM"
 confirm_changeset = false
 parameter_overrides = "Environment=dev AllowedOrigins=*"
 tags = "Environment=dev Project=AI-Document-Assistant ManagedBy=SAM"
-
-# ==========================================
-# STAGING ENVIRONMENT
-# ==========================================
-[staging]
-[staging.deploy.parameters]
-stack_name = "ai-doc-assistant-staging"
-region = "ap-southeast-1"
-parameter_overrides = "Environment=staging AllowedOrigins=https://staging.yourdomain.com"
-tags = "Environment=staging Project=AI-Document-Assistant ManagedBy=SAM"
-
-# ==========================================
-# PRODUCTION ENVIRONMENT
-# ==========================================
-[prod]
-[prod.deploy.parameters]
-stack_name = "ai-doc-assistant-prod"
-region = "ap-southeast-1"
-parameter_overrides = "Environment=prod AllowedOrigins=https://yourdomain.com"
-confirm_changeset = true  # Extra safety in prod
-tags = "Environment=prod Project=AI-Document-Assistant ManagedBy=SAM"
