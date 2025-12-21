@@ -7,6 +7,3 @@ s3_prefix = "ai-document-assistant"
 capabilities = "CAPABILITY_IAM"
 parameter_overrides = "Environment=\"dev\" AllowedOrigins=\"*\""
 image_repositories = []
-
-[default.global.parameters]
-region = "us-east-1"

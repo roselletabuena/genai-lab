@@ -24,6 +24,22 @@ Parameters:
 # ==========================================
 Resources:
   # ------------------------------------------
+  # API Gateway
+  # ------------------------------------------
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub "ai-doc-assistant-api-${Environment}"
+      StageName: !Ref Environment
+      Cors:
+        AllowOrigin: !Sub "'${AllowedOrigins}'"
+        AllowHeaders: "'Content-Type,X-Api-Key,Authorization'"
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        MaxAge: "'3600'"
+      TracingEnabled: true
+      Tags:
+        Environment: !Ref Environment
+  # ------------------------------------------
   # S3 Bucket
   # ------------------------------------------
   DocumentsBucket:
@@ -123,6 +139,60 @@ Resources:
           Value: !Ref Environment
 
   # ------------------------------------------
+  # Lambda Function
+  # ------------------------------------------
+  DocumentsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "ai-doc-assistant-api-${Environment}"
+      Handler: lambda.handler
+      Runtime: nodejs20.x
+      CodeUri: ../backend/dist/
+      MemorySize: 512
+      Timeout: 30
+      Role: !GetAtt AppRole.Arn
+      Environment:
+        Variables:
+          NODE_ENV: !Ref Environment
+          AWS_REGION: !Ref AWS::Region
+          DOCUMENTS_BUCKET: !Ref DocumentsBucket
+          DOCUMENTS_TABLE: !Ref DocumentsTable
+          CHUNKS_TABLE: !Ref ChunksTable
+      Events:
+        # Root endpoint
+        RootGet:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /
+            Method: GET
+        
+        # Documents endpoints
+        ListDocuments:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /documents
+            Method: GET
+        
+        UploadDocument:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /documents/upload
+            Method: POST
+        
+        # Catch-all for Fastify routing
+        ProxyRequest:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /{proxy+}
+            Method: ANY
+      Tags:
+        Environment: !Ref Environment
+
+  # ------------------------------------------
   # IAM Role
   # ------------------------------------------
   AppRole:
@@ -184,3 +254,15 @@ Outputs:
 
   Region:
     Value: !Ref AWS::Region
+
+  ApiGatewayUrl:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/"
+
+  ApiGatewayId:
+    Description: "API Gateway ID"
+    Value: !Ref ApiGateway
+
+  DocumentsFunctionArn:
+    Description: "Lambda Function ARN"
+    Value: !GetAtt DocumentsFunction.Arn

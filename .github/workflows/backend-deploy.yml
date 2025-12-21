@@ -33,6 +33,20 @@ jobs:
         working-directory: ./backend
         run: npm run build
 
+      - name: Prepare Lambda package
+        working-directory: ./backend
+        run: |
+          cp package.json dist/
+          cp package-lock.json dist/
+          cd dist && npm ci --omit=dev
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
       - name: Setup AWS SAM
         uses: aws-actions/setup-sam@v2
         with:
@@ -42,15 +56,10 @@ jobs:
         working-directory: ./infrastructure
         run: sam build
 
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
       - name: SAM Deploy
         working-directory: ./infrastructure
         run: |
-          sam deploy --no-fail-on-empty-changeset
+          sam deploy \
+            --no-fail-on-empty-changeset \
+            --no-confirm-changeset \
+            --region ${{ secrets.AWS_REGION }}
