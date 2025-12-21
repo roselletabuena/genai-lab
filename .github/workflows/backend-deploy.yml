@@ -52,4 +52,4 @@ jobs:
       - name: SAM Deploy
         working-directory: ./infrastructure
         run: |
-          sam deploy
+          sam deploy --no-fail-on-empty-changeset
