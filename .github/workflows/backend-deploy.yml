@@ -5,6 +5,7 @@ on:
       - main
     paths:
       - 'backend/**'
+      - 'infrastructure/**'
       - '.github/workflows/backend-deploy.yml'
   workflow_dispatch: # Manual Trigger option
 
