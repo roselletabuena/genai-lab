@@ -147,7 +147,7 @@ Resources:
       FunctionName: !Sub "ai-doc-assistant-api-${Environment}"
       Handler: lambda.handler
       Runtime: nodejs20.x
-      CodeUri: lambda-code/
+      CodeUri: ../backend/dist/
       MemorySize: 512
       Timeout: 30
       Role: !GetAtt AppRole.Arn
