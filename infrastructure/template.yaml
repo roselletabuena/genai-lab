@@ -217,7 +217,10 @@ Resources:
                   - "s3:GetObject"
                   - "s3:PutObject"
                   - "s3:DeleteObject"
-                Resource: !Sub "${DocumentsBucket.Arn}/*"
+                  - "s3:ListBucket"
+                Resource: 
+                  - !GetAtt DocumentsBucket.Arn
+                  - !Sub "${DocumentsBucket.Arn}/*"
               - Effect: Allow
                 Action:
                   - "dynamodb:GetItem"
