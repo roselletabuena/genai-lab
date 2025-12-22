@@ -39,6 +39,8 @@ jobs:
           cp package.json dist/
           cp package-lock.json dist/
           cd dist && npm ci --omit=dev
+          echo "Listing contents of dist folder:"
+          ls -R .
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -51,19 +53,25 @@ jobs:
         uses: aws-actions/setup-sam@v2
         with:
           use-installer: true
-          
+
+                    
       # - name: SAM Build
       #   working-directory: ./infrastructure
       #   run: sam build --use-container
+
+      - name: SAM Build
+        working-directory: ./infrastructure
+        run: |
+          echo "File structure before SAM build:"
+          ls -R ..
+          sam build --use-container
+          echo "File structure after SAM build:"
+          ls -R .aws-sam
 
       - name: SAM Deploy
         working-directory: ./infrastructure
         run: |
           sam deploy \
-            --stack-name ai-document-assistant \
-            --capabilities CAPABILITY_IAM \
-            --resolve-s3 \
             --no-fail-on-empty-changeset \
             --no-confirm-changeset \
-            --region ${{ secrets.AWS_REGION }} \
-            --force-upload
+            --region ${{ secrets.AWS_REGION }}
