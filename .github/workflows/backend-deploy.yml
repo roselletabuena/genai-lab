@@ -52,7 +52,11 @@ jobs:
         with:
           use-installer: true
 
-      - name: Package and Deploy
+      - name: SAM Build
+        working-directory: ./infrastructure
+        run: sam build --use-container
+
+      - name: SAM Deploy
         working-directory: ./infrastructure
         run: |
           sam deploy \
