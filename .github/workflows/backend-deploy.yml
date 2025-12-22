@@ -63,7 +63,7 @@ jobs:
         working-directory: ./infrastructure
         run: |
           echo "File structure before SAM build:"
-          ls -R ..
+          ls -R ../backend/dist
           sam build --use-container
           echo "File structure after SAM build:"
           ls -R .aws-sam
