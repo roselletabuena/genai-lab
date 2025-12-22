@@ -52,10 +52,6 @@ jobs:
         with:
           use-installer: true
 
-      - name: SAM Build
-        working-directory: ./infrastructure
-        run: sam build
-
       - name: SAM Deploy
         working-directory: ./infrastructure
         run: |
