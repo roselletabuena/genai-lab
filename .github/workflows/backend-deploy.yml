@@ -51,19 +51,14 @@ jobs:
         uses: aws-actions/setup-sam@v2
         with:
           use-installer: true
-          
-      # - name: SAM Build
-      #   working-directory: ./infrastructure
-      #   run: sam build --use-container
+
+      - name: SAM Build
+        working-directory: ./infrastructure
+        run: sam build --use-container
 
       - name: SAM Deploy
         working-directory: ./infrastructure
         run: |
           sam deploy \
-            --stack-name ai-document-assistant \
-            --capabilities CAPABILITY_IAM \
-            --resolve-s3 \
             --no-fail-on-empty-changeset \
-            --no-confirm-changeset \
-            --region ${{ secrets.AWS_REGION }} \
-            --force-upload
+            --no-confirm-changeset
