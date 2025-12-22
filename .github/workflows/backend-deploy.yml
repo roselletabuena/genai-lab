@@ -52,10 +52,13 @@ jobs:
         with:
           use-installer: true
 
-      - name: SAM Deploy
+      - name: Package and Deploy
         working-directory: ./infrastructure
         run: |
           sam deploy \
+            --stack-name ai-document-assistant \
+            --capabilities CAPABILITY_IAM \
+            --resolve-s3 \
             --no-fail-on-empty-changeset \
             --no-confirm-changeset \
             --region ${{ secrets.AWS_REGION }}
