@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import { type FC } from 'react';
 import {
     Card,
     CardContent,
@@ -7,13 +7,11 @@ import {
     Chip,
     IconButton,
     CircularProgress,
+    useTheme,
 } from '@mui/material';
 import {
     PictureAsPdf,
     Delete,
-    CheckCircle,
-    Error as ErrorIcon,
-    Schedule,
 } from '@mui/icons-material';
 import type { Document } from '../../types';
 
@@ -32,6 +30,8 @@ const DocumentCard: FC<DocumentCardProps> = ({
     onSelect,
     isSelected
 }) => {
+    const theme = useTheme();
+    const mode = theme.palette.mode;
     const formatFileSize = (bytes: number) => {
         if (bytes === 0) return '0 Bytes';
         const k = 1024;
@@ -55,19 +55,6 @@ const DocumentCard: FC<DocumentCardProps> = ({
         return 'just now';
     };
 
-    const getStatusIcon = () => {
-        switch (document.status) {
-            case 'ready':
-                return <CheckCircle color="success" fontSize="small" />;
-            case 'processing':
-                return <CircularProgress size={16} />;
-            case 'error':
-                return <ErrorIcon color="error" fontSize="small" />;
-            default:
-                return <Schedule color="action" fontSize="small" />;
-        }
-    };
-
     const getStatusColor = () => {
         switch (document.status) {
             case 'ready':
@@ -86,62 +73,94 @@ const DocumentCard: FC<DocumentCardProps> = ({
             onClick={() => onSelect?.(document.id)}
             sx={{
                 cursor: onSelect ? 'pointer' : 'default',
-                border: isSelected ? 2 : 1,
-                borderColor: isSelected ? 'primary.main' : 'divider',
-                transition: 'transform 0.2s, box-shadow 0.2s',
+                position: 'relative',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                border: isSelected
+                    ? '2px solid #6366f1'
+                    : '1px solid transparent',
+                backgroundColor: isSelected
+                    ? (theme.palette.mode === 'light' ? 'rgba(99, 102, 241, 0.04)' : 'rgba(129, 140, 248, 0.08)')
+                    : 'background.paper',
                 '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: 4,
+                    transform: 'translateY(-2px)',
+                    boxShadow: theme.palette.mode === 'light'
+                        ? '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)'
+                        : '0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3)',
+                    borderColor: isSelected ? 'primary.main' : 'divider',
                 },
             }}
         >
-            <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                    <PictureAsPdf color="primary" sx={{ fontSize: 40 }} />
+            <CardContent sx={{ p: '16px !important' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box
+                        sx={{
+                            width: 48,
+                            height: 48,
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: mode === 'light' ? 'rgba(99, 102, 241, 0.1)' : 'rgba(129, 140, 248, 0.1)',
+                            color: 'primary.main',
+                        }}
+                    >
+                        <PictureAsPdf sx={{ fontSize: 24 }} />
+                    </Box>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Typography
-                            variant="h6"
+                            variant="subtitle1"
                             sx={{
+                                fontWeight: 600,
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap',
-                                mb: 0.5,
+                                color: isSelected ? 'primary.main' : 'text.primary',
                             }}
                         >
                             {document.filename}
                         </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                            <Chip
-                                icon={getStatusIcon()}
-                                label={document.status}
-                                size="small"
-                                color={getStatusColor() as any}
-                                variant="outlined"
-                            />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <Typography variant="caption" color="text.secondary">
                                 {formatFileSize(document.size)}
                             </Typography>
-                        </Box>
-                        <Typography variant="caption" color="text.secondary">
-                            Uploaded {formatTimeAgo(document.uploadedAt)}
-                        </Typography>
-                        {document.pageCount && (
-                            <Typography variant="caption" color="text.secondary" sx={{ ml: 2 }}>
-                                • {document.pageCount} pages
+                            <Typography variant="caption" color="text.secondary">
+                                •
                             </Typography>
-                        )}
+                            <Typography variant="caption" color="text.secondary">
+                                {formatTimeAgo(document.uploadedAt)}
+                            </Typography>
+                        </Box>
                     </Box>
-                    <IconButton
-                        color="error"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onDelete(document.id);
-                        }}
-                        disabled={isDeleting}
-                        size="small"
-                    >
-                        {isDeleting ? <CircularProgress size={20} /> : <Delete />}
-                    </IconButton>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <Chip
+                            label={document.status}
+                            size="small"
+                            color={getStatusColor() as any}
+                            variant="outlined"
+                            sx={{
+                                height: 20,
+                                fontSize: '0.65rem',
+                                fontWeight: 700,
+                                textTransform: 'uppercase',
+                                borderRadius: '6px'
+                            }}
+                        />
+                        <IconButton
+                            color="error"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onDelete(document.id);
+                            }}
+                            disabled={isDeleting}
+                            size="small"
+                            sx={{
+                                opacity: 0.5,
+                                '&:hover': { opacity: 1, backgroundColor: 'rgba(239, 68, 68, 0.1)' }
+                            }}
+                        >
+                            {isDeleting ? <CircularProgress size={16} /> : <Delete sx={{ fontSize: 18 }} />}
+                        </IconButton>
+                    </Box>
                 </Box>
             </CardContent>
         </Card>

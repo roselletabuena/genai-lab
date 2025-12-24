@@ -60,25 +60,33 @@ export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        overflow: 'hidden',
+        backgroundColor: 'background.default'
+      }}>
         <Header mode={mode} onToggleTheme={toggleTheme} />
-        <Toolbar />
-        <Box sx={{ flex: 1, overflow: 'hidden', p: 3 }}>
-          <Grid container spacing={3} sx={{ height: '100%' }}>
+        <Toolbar sx={{ minHeight: '72px !important' }} />
+        <Box sx={{ flex: 1, overflow: 'hidden', p: { xs: 2, md: 4 } }}>
+          <Grid container spacing={4} sx={{ height: '100%' }}>
             {/* Left Panel: Documents */}
-            <Grid size={{ xs: 12, md: 4 }} sx={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
+            <Grid size={{ xs: 12, md: 4, lg: 3.5 }} sx={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 4 }}>
               <DocumentUpload onUpload={handleUpload} isUploading={isUploading} />
-              <DocumentList
-                documents={documents}
-                onDelete={handleDelete}
-                isDeleting={isDeleting}
-                onSelect={setSelectedDocumentId}
-                selectedId={selectedDocumentId}
-              />
+              <Box sx={{ flex: 1, overflowY: 'auto', pr: 1, '&::-webkit-scrollbar': { width: '4px' }, '&::-webkit-scrollbar-thumb': { backgroundColor: 'divider', borderRadius: '4px' } }}>
+                <DocumentList
+                  documents={documents}
+                  onDelete={handleDelete}
+                  isDeleting={isDeleting}
+                  onSelect={setSelectedDocumentId}
+                  selectedId={selectedDocumentId}
+                />
+              </Box>
             </Grid>
 
             {/* Right Panel: Chat */}
-            <Grid size={{ xs: 12, md: 8 }} sx={{ height: '100%' }}>
+            <Grid size={{ xs: 12, md: 8, lg: 8.5 }} sx={{ height: '100%' }}>
               <Chat
                 selectedDocument={selectedDocument}
                 messages={messages}
