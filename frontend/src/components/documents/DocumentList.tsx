@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import { Box, Typography } from '@mui/material';
 import { FolderOpen } from '@mui/icons-material';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { Document } from '../../types';
 import DocumentCard from './DocumentCard';
 
@@ -20,6 +20,8 @@ const DocumentList: FC<DocumentListProps> = ({
     onSelect,
     selectedId
 }) => {
+
+
     if (documents.length === 0) {
         return (
             <motion.div
@@ -49,20 +51,7 @@ const DocumentList: FC<DocumentListProps> = ({
         );
     }
 
-    const container = {
-        hidden: { opacity: 0 },
-        show: {
-            opacity: 1,
-            transition: {
-                staggerChildren: 0.1
-            }
-        }
-    };
 
-    const item = {
-        hidden: { opacity: 0, x: -20 },
-        show: { opacity: 1, x: 0 }
-    };
 
     return (
         <Box>
@@ -73,23 +62,31 @@ const DocumentList: FC<DocumentListProps> = ({
                 </Box>
             </Typography>
             <Box
-                component={motion.div}
-                variants={container}
-                initial="hidden"
-                animate="show"
                 sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
             >
-                {documents.map((doc) => (
-                    <motion.div key={doc.id} variants={item}>
-                        <DocumentCard
-                            document={doc}
-                            onDelete={onDelete}
-                            isDeleting={isDeleting}
-                            onSelect={onSelect}
-                            isSelected={selectedId === doc.id}
-                        />
-                    </motion.div>
-                ))}
+                <AnimatePresence mode="popLayout" initial={false}>
+                    {documents.map((doc) => (
+                        <motion.div
+                            key={doc.id}
+                            layout
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={{
+                                duration: 0.3,
+                                layout: { type: "spring", stiffness: 500, damping: 30 }
+                            }}
+                        >
+                            <DocumentCard
+                                document={doc}
+                                onDelete={onDelete}
+                                isDeleting={isDeleting}
+                                onSelect={onSelect}
+                                isSelected={selectedId === doc.id}
+                            />
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
             </Box>
         </Box>
     );
