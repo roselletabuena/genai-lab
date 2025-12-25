@@ -75,7 +75,7 @@ export default function App() {
         <div className="mesh-bg" />
 
         <Header mode={mode} onToggleTheme={toggleTheme} />
-        <Toolbar sx={{ minHeight: '80px !important' }} />
+        <Toolbar sx={{ minHeight: '68px !important' }} />
 
         <Box
           component={motion.main}
@@ -86,6 +86,7 @@ export default function App() {
             flex: 1,
             overflow: 'hidden',
             p: { xs: 2, md: 3, lg: 4 },
+            pt: { xs: 0, sm: 1 },
             maxWidth: '1800px',
             width: '100%',
             mx: 'auto'
