@@ -18,10 +18,14 @@ const documents: FastifyPluginAsync = async (fastify, _): Promise<void> => {
       return reply.code(400).send({ error: 'No file uploaded' });
     }
 
-    const buffer = await data.toBuffer();
-    const result = await uploadDocument(data.filename, buffer, data.mimetype);
-
-    return { message: 'Upload successful', document: result };
+    try {
+      const buffer = await data.toBuffer();
+      const result = await uploadDocument(data.filename, buffer, data.mimetype);
+      return { message: 'Upload successful', document: result };
+    } catch (err) {
+      request.log.error(err);
+      return reply.code(500).send({ error: 'Failed to upload document', details: err instanceof Error ? err.message : 'Unknown error' });
+    }
   });
 
   fastify.delete('/:key', async (request, reply) => {
