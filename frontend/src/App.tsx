@@ -5,6 +5,7 @@ import {
   Toolbar,
   Box,
   Grid,
+  CircularProgress,
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -26,7 +27,7 @@ import { createAppTheme } from './lib/theme';
 
 export default function App() {
   const { mode, toggleTheme } = useThemeMode();
-  const { documents, isUploading, isDeleting, handleUpload, handleDelete } = useDocument();
+  const { documents, isUploading, isDeleting, isLoading, handleUpload, handleDelete } = useDocument();
 
   const theme = useMemo(() => createAppTheme(mode), [mode]);
 
@@ -113,13 +114,19 @@ export default function App() {
                 '&::-webkit-scrollbar': { width: '4px' },
                 '&::-webkit-scrollbar-thumb': { backgroundColor: 'divider', borderRadius: '4px' }
               }}>
-                <DocumentList
-                  documents={documents}
-                  onDelete={handleDelete}
-                  isDeleting={isDeleting}
-                  onSelect={setSelectedDocumentId}
-                  selectedId={selectedDocumentId}
-                />
+                {isLoading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+                    <CircularProgress size={32} sx={{ color: 'primary.main' }} />
+                  </Box>
+                ) : (
+                  <DocumentList
+                    documents={documents}
+                    onDelete={handleDelete}
+                    isDeleting={isDeleting}
+                    onSelect={setSelectedDocumentId}
+                    selectedId={selectedDocumentId}
+                  />
+                )}
               </Box>
             </Grid>
 
