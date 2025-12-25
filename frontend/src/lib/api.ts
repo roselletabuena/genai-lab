@@ -6,6 +6,11 @@ export interface Document {
     lastModified?: string;
 }
 
+export interface ErrorDetails {
+    error: string;
+    details?: string;
+}
+
 export const api = {
     baseUrl: import.meta.env.VITE_API_URL,
 
@@ -19,7 +24,11 @@ export const api = {
         });
 
         if (!response.ok) {
-            throw new Error(`Upload failed: ${response.statusText}`);
+            const errorData = await response.json() as ErrorDetails;
+            const errorMessage = errorData.details
+                ? `${errorData.error} (${errorData.details})`
+                : errorData.error || `Upload failed: ${response.statusText}`;
+            throw new Error(errorMessage);
         }
 
         return response.json();

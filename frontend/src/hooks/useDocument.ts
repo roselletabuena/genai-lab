@@ -44,9 +44,8 @@ export const useDocument = () => {
             await api.uploadDocument(file);
             await refreshDocuments();
         } catch (err) {
-            console.error('Upload failed:', err);
             setError('Upload failed. Please try again.');
-            throw new Error('Upload failed. Please try again.');
+            throw new Error(err as string);
         } finally {
             setIsUploading(false);
         }
