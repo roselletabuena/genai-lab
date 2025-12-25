@@ -23,6 +23,7 @@
     "@aws-sdk/s3-request-presigner": "^3.946.0",
     "@fastify/autoload": "^6.0.0",
     "@fastify/aws-lambda": "^6.3.0",
+    "@fastify/cors": "^11.2.0",
     "@fastify/env": "^5.0.3",
     "@fastify/multipart": "^9.3.0",
     "@fastify/sensible": "^6.0.0",

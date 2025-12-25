@@ -8,7 +8,7 @@ export async function uploadDocument(
   mimetype: string
 ) {
   const key = `${randomUUID()}-${filename}`;
-  
+
   await s3Client.send(new PutObjectCommand({
     Bucket: DOCUMENTS_BUCKET,
     Key: key,
@@ -21,7 +21,7 @@ export async function uploadDocument(
 
 export async function listDocuments() {
   const { ListObjectsV2Command } = await import('@aws-sdk/client-s3');
-  
+
   const result = await s3Client.send(new ListObjectsV2Command({
     Bucket: DOCUMENTS_BUCKET,
   }));
@@ -31,4 +31,15 @@ export async function listDocuments() {
     size: item.Size,
     lastModified: item.LastModified,
   }));
+}
+
+export async function deleteDocument(key: string) {
+  const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');
+
+  await s3Client.send(new DeleteObjectCommand({
+    Bucket: DOCUMENTS_BUCKET,
+    Key: key,
+  }));
+
+  return { key, message: 'Deleted successfully' };
 }

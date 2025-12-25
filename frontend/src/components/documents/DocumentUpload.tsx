@@ -45,8 +45,12 @@ const DocumentUpload: FC<DocumentUploadProps> = ({ onUpload, isUploading }) => {
             return;
         }
 
-        onUpload(file);
-        setSuccess(`Successfully uploaded ${file.name}`);
+        try {
+            await onUpload(file);
+            setSuccess(`Successfully uploaded ${file.name}`);
+        } catch (err: any) {
+            setError(err.message || 'Failed to upload document');
+        }
     };
 
     const handleDrop = useCallback((e: DragEvent) => {

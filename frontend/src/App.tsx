@@ -30,6 +30,10 @@ export default function App() {
 
   const theme = useMemo(() => createAppTheme(mode), [mode]);
 
+  console.log("test", import.meta.env.VITE_API_URL)
+  console.log("test", import.meta.env.VITE_ENV);
+  console.log("test", import.meta.env.ENV);
+
   const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
 

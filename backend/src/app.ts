@@ -3,6 +3,7 @@ import AutoLoad, { AutoloadPluginOptions } from '@fastify/autoload'
 import { FastifyPluginAsync, FastifyServerOptions } from 'fastify'
 import fastifyEnv from '@fastify/env';
 import multipart from '@fastify/multipart';
+import cors from '@fastify/cors';
 import Fastify from 'fastify';
 
 export interface AppOptions extends FastifyServerOptions, Partial<AutoloadPluginOptions> {
@@ -32,6 +33,10 @@ const appPlugin: FastifyPluginAsync<AppOptions> = async (
   })
 
   await fastify.register(multipart);
+  await fastify.register(cors, {
+    origin: true, // In production, replace with actual origin
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  });
 
   void fastify.register(AutoLoad, {
     dir: join(__dirname, 'plugins'),

@@ -1,19 +1,19 @@
 import { FastifyPluginAsync } from 'fastify'
-import { uploadDocument, listDocuments } from '../../services/storageService';
+import { uploadDocument, listDocuments, deleteDocument } from '../../services/storageService';
 
 const documents: FastifyPluginAsync = async (fastify, _): Promise<void> => {
   fastify.get('/', async function () {
     const documents = await listDocuments();
-    
-    return { 
+
+    return {
       count: documents.length,
-      documents 
+      documents
     };
   })
-  
- fastify.post('/upload', async (request, reply) => {
+
+  fastify.post('/upload', async (request, reply) => {
     const data = await request.file();
-    
+
     if (!data) {
       return reply.code(400).send({ error: 'No file uploaded' });
     }
@@ -24,6 +24,18 @@ const documents: FastifyPluginAsync = async (fastify, _): Promise<void> => {
     return { message: 'Upload successful', document: result };
   });
 
+  fastify.delete('/:key', async (request, reply) => {
+    const { key } = request.params as { key: string };
+
+    if (!key) {
+      return reply.code(400).send({ error: 'No key provided' });
+    }
+
+    const result = await deleteDocument(key);
+    return result;
+  });
+
 }
+
 
 export default documents;
