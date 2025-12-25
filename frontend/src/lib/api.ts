@@ -1,4 +1,3 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export interface Document {
     key: string;
@@ -8,13 +7,13 @@ export interface Document {
 }
 
 export const api = {
-    baseUrl: API_URL,
+    baseUrl: import.meta.env.VITE_API_URL,
 
     async uploadDocument(file: File): Promise<{ message: string; document: Document }> {
         const formData = new FormData();
         formData.append('file', file);
 
-        const response = await fetch(`${API_URL}/documents/upload`, {
+        const response = await fetch(`${this.baseUrl}/documents/upload`, {
             method: 'POST',
             body: formData,
         });
@@ -27,7 +26,7 @@ export const api = {
     },
 
     async fetchDocuments(): Promise<{ count: number; documents: Document[] }> {
-        const response = await fetch(`${API_URL}/documents`);
+        const response = await fetch(`${this.baseUrl}/documents`);
 
         if (!response.ok) {
             throw new Error(`Failed to fetch documents: ${response.statusText}`);
@@ -37,7 +36,7 @@ export const api = {
     },
 
     async deleteDocument(key: string): Promise<{ key: string; message: string }> {
-        const response = await fetch(`${API_URL}/documents/${key}`, {
+        const response = await fetch(`${this.baseUrl}/documents/${key}`, {
             method: 'DELETE',
         });
 
