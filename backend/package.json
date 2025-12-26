@@ -20,6 +20,7 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.946.0",
     "@aws-sdk/client-s3": "^3.946.0",
+    "@aws-sdk/lib-dynamodb": "^3.958.0",
     "@aws-sdk/s3-request-presigner": "^3.946.0",
     "@fastify/autoload": "^6.0.0",
     "@fastify/aws-lambda": "^6.3.0",
@@ -31,11 +32,14 @@
     "dotenv": "^17.2.3",
     "fastify": "^5.0.0",
     "fastify-cli": "^7.4.1",
-    "fastify-plugin": "^5.0.0"
+    "fastify-plugin": "^5.0.0",
+    "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.159",
     "@types/node": "^24.10.1",
+    "@types/pdf-parse": "^1.1.5",
+    "@types/uuid": "^10.0.0",
     "c8": "^10.1.2",
     "concurrently": "^9.0.0",
     "fastify-tsconfig": "^3.0.0",
