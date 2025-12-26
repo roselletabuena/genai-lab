@@ -1,15 +1,6 @@
-import pdfParse from 'pdf-parse';
+const { PDFParse } = require('pdf-parse');
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
-
-type PDFParser = (dataBuffer: Buffer, options?: any) => Promise<{
-    numpages: number;
-    numrender: number;
-    info: any;
-    metadata: any;
-    text: string;
-    version: string;
-}>;
 
 export class DocumentProcessor {
     private s3Client: S3Client;
@@ -27,26 +18,28 @@ export class DocumentProcessor {
                 Bucket: bucket,
                 Key: key
             });
-            const pdf = pdfParse as any as PDFParser;
             const response = await this.s3Client.send(command);
             const buffer = await this.streamToBuffer(response.Body as Readable);
-            const data = await pdf(buffer);
+            const uint8Array = new Uint8Array(buffer);
+            const parser = new PDFParse(uint8Array);
+            const data = await parser.getText();
 
             return data.text;
         } catch (error) {
             console.error('Error extracting text from PDF:', error);
-            throw new Error(`Failed to extract text: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            throw new Error(`Failed to extract text: ${error instanceof Error ? error.message : 'Unknown error'} `);
         }
     }
 
     async extractTextFromBuffer(buffer: Buffer): Promise<string> {
         try {
-            const pdf = pdfParse as any as PDFParser;
-            const data = await pdf(buffer);
+            const uint8Array = new Uint8Array(buffer);
+            const parser = new PDFParse(uint8Array);
+            const data = await parser.getText();
             return data.text;
         } catch (error) {
             console.error('Error extracting text from buffer:', error);
-            throw new Error(`Failed to extract text: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            throw new Error(`Failed to extract text: ${error instanceof Error ? error.message : 'Unknown error'} `);
         }
     }
 
