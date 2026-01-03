@@ -11,7 +11,9 @@ export interface AppOptions extends FastifyServerOptions, Partial<AutoloadPlugin
 }
 
 const options: AppOptions = {
-  ignoreTrailingSlash: true,
+  routerOptions: {
+    ignoreTrailingSlash: true,
+  }
 }
 
 const appPlugin: FastifyPluginAsync<AppOptions> = async (
