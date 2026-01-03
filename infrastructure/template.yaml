@@ -186,14 +186,6 @@ Resources:
             Path: /documents/upload
             Method: POST
         
-        # Chat endpoint (RAG Q&A)
-        Chat:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ApiGateway
-            Path: /chat
-            Method: POST
-        
         # Catch-all for Fastify routing
         ProxyRequest:
           Type: Api
