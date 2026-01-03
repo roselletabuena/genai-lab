@@ -11,6 +11,7 @@ export interface AppOptions extends FastifyServerOptions, Partial<AutoloadPlugin
 }
 
 const options: AppOptions = {
+  ignoreTrailingSlash: true,
 }
 
 const appPlugin: FastifyPluginAsync<AppOptions> = async (
@@ -34,8 +35,14 @@ const appPlugin: FastifyPluginAsync<AppOptions> = async (
 
   await fastify.register(multipart);
   await fastify.register(cors, {
-    origin: true, // In production, replace with actual origin
+    origin: [
+      'https://ai-document-assistant-six.vercel.app',
+      'http://localhost:5173',
+      'http://localhost:3000'
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Api-Key'],
+    credentials: true
   });
 
   void fastify.register(AutoLoad, {
