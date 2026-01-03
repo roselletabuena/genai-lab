@@ -7,7 +7,7 @@ export class DocumentProcessor {
 
     constructor() {
         this.s3Client = new S3Client({
-            region: process.env.AWS_REGION || 'ap-southeast-1'
+            region: process.env.AWS_REGION || 'us-east-1'
         });
     }
 
