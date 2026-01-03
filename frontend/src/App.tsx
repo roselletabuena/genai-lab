@@ -24,6 +24,7 @@ import type { Message } from './types';
 
 // Lib
 import { createAppTheme } from './lib/theme';
+import { api } from './lib/api';
 
 export default function App() {
   const { mode, toggleTheme } = useThemeMode();
@@ -38,7 +39,9 @@ export default function App() {
     documents.find(doc => doc.id === selectedDocumentId) || null
     , [documents, selectedDocumentId]);
 
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = async (content: string) => {
+    if (!selectedDocumentId) return;
+
     const newMessage: Message = {
       id: String(Date.now()),
       role: 'user',
@@ -47,16 +50,28 @@ export default function App() {
     };
     setMessages(prev => [...prev, newMessage]);
 
-    // Simulate assistant response
-    setTimeout(() => {
+    try {
+      // Call RAG API
+      const { answer } = await api.sendChatQuery(selectedDocumentId, content);
+
       const assistantMessage: Message = {
         id: String(Date.now() + 1),
         role: 'assistant',
-        content: `I've analyzed ${selectedDocument?.filename} and I'm ready to help you with: "${content}"`,
+        content: answer,
         timestamp: new Date().toISOString(),
       };
       setMessages(prev => [...prev, assistantMessage]);
-    }, 1000);
+
+    } catch (err) {
+      console.error('Chat error:', err);
+      const errorMessage: Message = {
+        id: String(Date.now() + 1),
+        role: 'assistant',
+        content: "I'm sorry, I encountered an error while processing your request. Please try again.",
+        timestamp: new Date().toISOString(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    }
   };
 
   return (

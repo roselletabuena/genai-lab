@@ -54,6 +54,23 @@ export const api = {
         }
 
         return response.json();
+    },
+
+    async sendChatQuery(documentId: string, question: string): Promise<{ answer: string; chunksUsed: number }> {
+        const response = await fetch(`${this.baseUrl}/chat`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ documentId, question }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `Chat error: ${response.statusText}`);
+        }
+
+        return response.json();
     }
 };
 
