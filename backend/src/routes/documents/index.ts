@@ -24,6 +24,18 @@ const documents: FastifyPluginAsync = async (fastify, _): Promise<void> => {
 
     try {
       const buffer = await data.toBuffer();
+
+      // Debug: Check if buffer contains valid PDF signature
+      const pdfSignature = buffer.slice(0, 4).toString('utf8');
+      request.log.info(`Buffer size: ${buffer.length}, First 4 bytes: ${pdfSignature}, Expected: %PDF`);
+
+      if (pdfSignature !== '%PDF') {
+        request.log.error(`Invalid PDF signature. Got: ${pdfSignature}. Buffer may be base64 encoded or corrupted.`);
+        // Try to decode if it looks like base64
+        const bufferAsString = buffer.toString('utf8').slice(0, 100);
+        request.log.error(`First 100 chars of buffer: ${bufferAsString}`);
+      }
+
       const result = await uploadDocument(data.filename, buffer, data.mimetype);
 
       request.log.info(`Document uploaded: ${result.key}`);
