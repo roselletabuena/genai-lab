@@ -233,6 +233,7 @@ Resources:
                   - "dynamodb:UpdateItem"
                   - "dynamodb:DeleteItem"
                   - "dynamodb:Query"
+                  - "dynamodb:BatchWriteItem"
                 Resource:
                   - !GetAtt DocumentsTable.Arn
                   - !Sub "${DocumentsTable.Arn}/index/*"
