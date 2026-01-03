@@ -1,6 +1,7 @@
 import { FastifyPluginAsync } from 'fastify'
 import { uploadDocument, listDocuments, deleteDocument } from '../../services/storageService';
 import { DocumentProcessor } from '../../services/documentProcessor';
+import { storeChunks, deleteChunksByDocumentId } from '../../services/chunkStorage';
 
 const documents: FastifyPluginAsync = async (fastify, _): Promise<void> => {
   fastify.get('/', async function () {
@@ -37,14 +38,19 @@ const documents: FastifyPluginAsync = async (fastify, _): Promise<void> => {
       request.log.info('Chunking text...');
       const chunks = processor.chunkText(text);
 
-      console.log('Text chunked into', chunks.length, 'chunks');
-
       if (chunks.length === 0) {
         throw new Error('Failed to create chunks from text');
       }
 
+      request.log.info('Storing chunks to DynamoDB...');
+      const storedCount = await storeChunks(result.key, chunks);
+      request.log.info(`Stored ${storedCount} chunks`);
 
-      return { message: 'Upload successful', document: result };
+      return {
+        message: 'Upload successful',
+        document: result,
+        chunks: storedCount
+      };
     } catch (err) {
       request.log.error(err);
       return reply.code(500).send({ error: 'Failed to upload document', details: err instanceof Error ? err.message : 'Unknown error' });
@@ -58,8 +64,10 @@ const documents: FastifyPluginAsync = async (fastify, _): Promise<void> => {
       return reply.code(400).send({ error: 'No key provided' });
     }
 
+    const deletedChunks = await deleteChunksByDocumentId(key);
     const result = await deleteDocument(key);
-    return result;
+
+    return { ...result, chunksDeleted: deletedChunks };
   });
 
 }

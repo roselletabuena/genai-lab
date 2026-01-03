@@ -4,6 +4,6 @@
     "DOCUMENTS_TABLE": "Documents-local",
     "CHUNKS_TABLE": "Chunks-local",
     "DOCUMENTS_BUCKET": "ai-doc-assistant-local",
-    "AWS_REGION": "ap-southeast-1"
+    "AWS_REGION": "us-east-1"
   }
 }
