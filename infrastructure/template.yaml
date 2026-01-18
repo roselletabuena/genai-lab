@@ -36,12 +36,6 @@ Resources:
         - "application/pdf"
         - "application/octet-stream"
         - "*/*"
-      Cors:
-        AllowOrigin: !Ref AllowedOrigins
-        AllowHeaders: "'Content-Type,X-Api-Key,Authorization'"
-        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
-        AllowCredentials: true
-        MaxAge: "'3600'"
       TracingEnabled: true
       Tags:
         Environment: !Ref Environment

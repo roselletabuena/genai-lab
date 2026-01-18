@@ -42,7 +42,6 @@ const appPlugin: FastifyPluginAsync<AppOptions> = async (
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Api-Key"],
-    credentials: true,
   });
 
   void fastify.register(AutoLoad, {
