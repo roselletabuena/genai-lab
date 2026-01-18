@@ -16,8 +16,8 @@ Parameters:
 
   AllowedOrigins:
     Type: String
-    Default: "*"
-    Description: CORS allowed origins
+    Default: "https://ai-document-assistant-six.vercel.app"
+    Description: CORS allowed origins (comma-separated for multiple origins)
 
 # ==========================================
 # RESOURCES
@@ -37,9 +37,10 @@ Resources:
         - "application/octet-stream"
         - "*/*"
       Cors:
-        AllowOrigin: !Sub "'${AllowedOrigins}'"
+        AllowOrigin: !Ref AllowedOrigins
         AllowHeaders: "'Content-Type,X-Api-Key,Authorization'"
         AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowCredentials: true
         MaxAge: "'3600'"
       TracingEnabled: true
       Tags:

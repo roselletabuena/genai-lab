@@ -7,7 +7,7 @@ import cors from "@fastify/cors";
 import Fastify from "fastify";
 
 export interface AppOptions
-  extends FastifyServerOptions, Partial<AutoloadPluginOptions> {}
+  extends FastifyServerOptions, Partial<AutoloadPluginOptions> { }
 
 const options: AppOptions = {
   routerOptions: {
