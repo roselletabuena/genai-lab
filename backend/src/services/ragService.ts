@@ -1,7 +1,7 @@
 import { getChunksByDocumentId } from "./chunkStorage";
 import { invokeClaudeWithContext } from "../lib/bedrock";
 
-const MAX_CONTEXT_CHARS = 50000; // ~12K tokens, safe for Claude
+const MAX_CONTEXT_CHARS = 50000;
 
 export async function askQuestion(
   documentId: string,
@@ -13,7 +13,6 @@ export async function askQuestion(
     return { answer: "No document content found.", chunksUsed: 0 };
   }
 
-  // Build context from chunks (limit to max chars)
   let context = "";
   let chunksUsed = 0;
 
