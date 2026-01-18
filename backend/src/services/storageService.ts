@@ -1,32 +1,36 @@
-import { PutObjectCommand } from '@aws-sdk/client-s3';
-import { s3Client, DOCUMENTS_BUCKET } from '../lib/s3';
-import { randomUUID } from 'crypto';
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { s3Client, DOCUMENTS_BUCKET } from "../lib/s3";
+import { randomUUID } from "crypto";
 
 export async function uploadDocument(
   filename: string,
   buffer: Buffer,
-  mimetype: string
+  mimetype: string,
 ) {
   const key = `${randomUUID()}-${filename}`;
 
-  await s3Client.send(new PutObjectCommand({
-    Bucket: DOCUMENTS_BUCKET,
-    Key: key,
-    Body: buffer,
-    ContentType: mimetype,
-  }));
+  await s3Client.send(
+    new PutObjectCommand({
+      Bucket: DOCUMENTS_BUCKET,
+      Key: key,
+      Body: buffer,
+      ContentType: mimetype,
+    }),
+  );
 
   return { key, filename, size: buffer.length };
 }
 
 export async function listDocuments() {
-  const { ListObjectsV2Command } = await import('@aws-sdk/client-s3');
+  const { ListObjectsV2Command } = await import("@aws-sdk/client-s3");
 
-  const result = await s3Client.send(new ListObjectsV2Command({
-    Bucket: DOCUMENTS_BUCKET,
-  }));
+  const result = await s3Client.send(
+    new ListObjectsV2Command({
+      Bucket: DOCUMENTS_BUCKET,
+    }),
+  );
 
-  return (result.Contents || []).map(item => ({
+  return (result.Contents || []).map((item) => ({
     key: item.Key,
     size: item.Size,
     lastModified: item.LastModified,
@@ -34,12 +38,14 @@ export async function listDocuments() {
 }
 
 export async function deleteDocument(key: string) {
-  const { DeleteObjectCommand } = await import('@aws-sdk/client-s3');
+  const { DeleteObjectCommand } = await import("@aws-sdk/client-s3");
 
-  await s3Client.send(new DeleteObjectCommand({
-    Bucket: DOCUMENTS_BUCKET,
-    Key: key,
-  }));
+  await s3Client.send(
+    new DeleteObjectCommand({
+      Bucket: DOCUMENTS_BUCKET,
+      Key: key,
+    }),
+  );
 
-  return { key, message: 'Deleted successfully' };
+  return { key, message: "Deleted successfully" };
 }

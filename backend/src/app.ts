@@ -1,62 +1,60 @@
-import { join } from 'node:path'
-import AutoLoad, { AutoloadPluginOptions } from '@fastify/autoload'
-import { FastifyPluginAsync, FastifyServerOptions } from 'fastify'
-import fastifyEnv from '@fastify/env';
-import multipart from '@fastify/multipart';
-import cors from '@fastify/cors';
-import Fastify from 'fastify';
+import { join } from "node:path";
+import AutoLoad, { AutoloadPluginOptions } from "@fastify/autoload";
+import { FastifyPluginAsync, FastifyServerOptions } from "fastify";
+import fastifyEnv from "@fastify/env";
+import multipart from "@fastify/multipart";
+import cors from "@fastify/cors";
+import Fastify from "fastify";
 
-export interface AppOptions extends FastifyServerOptions, Partial<AutoloadPluginOptions> {
-
-}
+export interface AppOptions
+  extends FastifyServerOptions, Partial<AutoloadPluginOptions> {}
 
 const options: AppOptions = {
   routerOptions: {
     ignoreTrailingSlash: true,
-  }
-}
+  },
+};
 
 const appPlugin: FastifyPluginAsync<AppOptions> = async (
   fastify,
-  opts
+  opts,
 ): Promise<void> => {
-
   await fastify.register(fastifyEnv, {
     dotenv: true,
     schema: {
-      type: 'object',
+      type: "object",
       required: [],
       properties: {
-        LOCALSTACK_ENDPOINT: { type: 'string' },
-        AWS_REGION: { type: 'string' },
-        DOCUMENTS_BUCKET: { type: 'string' },
-        NODE_ENV: { type: 'string' },
-      }
-    }
-  })
+        LOCALSTACK_ENDPOINT: { type: "string" },
+        AWS_REGION: { type: "string" },
+        DOCUMENTS_BUCKET: { type: "string" },
+        NODE_ENV: { type: "string" },
+      },
+    },
+  });
 
   await fastify.register(multipart);
   await fastify.register(cors, {
     origin: [
-      'https://ai-document-assistant-six.vercel.app',
-      'http://localhost:5173',
-      'http://localhost:3000'
+      "https://ai-document-assistant-six.vercel.app",
+      "http://localhost:5173",
+      "http://localhost:3000",
     ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Api-Key'],
-    credentials: true
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Api-Key"],
+    credentials: true,
   });
 
   void fastify.register(AutoLoad, {
-    dir: join(__dirname, 'plugins'),
-    options: opts
-  })
+    dir: join(__dirname, "plugins"),
+    options: opts,
+  });
 
   void fastify.register(AutoLoad, {
-    dir: join(__dirname, 'routes'),
-    options: opts
-  })
-}
+    dir: join(__dirname, "routes"),
+    options: opts,
+  });
+};
 
 // Create the Fastify instance
 export const app = Fastify(options);
