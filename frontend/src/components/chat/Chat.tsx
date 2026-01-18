@@ -1,4 +1,8 @@
 import { type FC, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import {
     Box,
     Paper,
@@ -6,7 +10,7 @@ import {
     TextField,
     IconButton,
     Avatar,
-    useTheme,
+    useTheme
 } from '@mui/material';
 import { Send, SmartToy, Person, Description } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -182,9 +186,46 @@ const Chat: FC<ChatProps> = ({ selectedDocument, messages, onSendMessage }) => {
                                                     : '0 4px 6px -1px rgba(0,0,0,0.05)',
                                             }}
                                         >
-                                            <Typography variant="body2" sx={{ lineHeight: 1.6 }}>
-                                                {message.content}
-                                            </Typography>
+                                            <Box sx={{
+                                                '& p': { m: 0, mb: 1, lineHeight: 1.6, '&:last-child': { mb: 0 } },
+                                                '& a': { color: 'inherit', textDecoration: 'underline' },
+                                                '& pre': { m: 0, mb: 1.5, borderRadius: 1, overflow: 'hidden' },
+                                                '& ul, & ol': { m: 0, mb: 1, pl: 3 },
+                                                '& li': { mb: 0.5 }
+                                            }}>
+                                                <ReactMarkdown
+                                                    remarkPlugins={[remarkGfm]}
+                                                    components={{
+                                                        code(props) {
+                                                            const { children, className, node, ...rest } = props
+                                                            const match = /language-(\w+)/.exec(className || '')
+                                                            return match ? (
+                                                                // @ts-ignore
+                                                                <SyntaxHighlighter
+                                                                    {...rest}
+                                                                    PreTag="div"
+                                                                    children={String(children).replace(/\n$/, '')}
+                                                                    language={match[1]}
+                                                                    style={vscDarkPlus}
+                                                                    customStyle={{ margin: 0 }}
+                                                                />
+                                                            ) : (
+                                                                <code {...rest} className={className} style={{
+                                                                    background: 'rgba(0,0,0,0.2)',
+                                                                    padding: '2px 4px',
+                                                                    borderRadius: '4px',
+                                                                    fontSize: '0.875em',
+                                                                    fontFamily: 'monospace'
+                                                                }}>
+                                                                    {children}
+                                                                </code>
+                                                            )
+                                                        }
+                                                    }}
+                                                >
+                                                    {message.content}
+                                                </ReactMarkdown>
+                                            </Box>
                                         </Paper>
                                         <Typography
                                             variant="caption"

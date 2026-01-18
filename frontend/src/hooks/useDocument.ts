@@ -9,9 +9,6 @@ export const useDocument = () => {
         queryFn: () => api.fetchDocuments(),
         select: (response) => {
             return response.documents.map(doc => {
-                // S3 key format: randomUUID()-filename.ext
-                // UUID v4 format has 4 dashes: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-                // So the filename starts after the 5th part (4th dash of UUID + 1 separator dash)
                 const parts = doc.key.split('-');
                 const filename = doc.filename || (parts.length > 5 ? parts.slice(5).join('-') : doc.key);
 
