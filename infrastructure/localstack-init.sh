@@ -42,4 +42,15 @@ awslocal dynamodb create-table \
         }]' \
     --billing-mode PAY_PER_REQUEST
 
+echo "Creating DynamoDB table: ai-doc-assistant-conversations-dev"
+awslocal dynamodb create-table \
+    --table-name ai-doc-assistant-conversations-dev \
+    --attribute-definitions \
+        AttributeName=documentId,AttributeType=S \
+        AttributeName=timestamp,AttributeType=N \
+    --key-schema \
+        AttributeName=documentId,KeyType=HASH \
+        AttributeName=timestamp,KeyType=RANGE \
+    --billing-mode PAY_PER_REQUEST
+
 echo "LocalStack initialization complete!"
