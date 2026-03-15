@@ -18,12 +18,6 @@ Parameters:
     Type: String
     Default: "https://ai-document-assistant-six.vercel.app"
     Description: CORS allowed origins (comma-separated for multiple origins)
-
-  BedrockGuardrailId:
-    Type: String
-    Default: ""
-    Description: Bedrock Guardrail ID
-
 # ==========================================
 # RESOURCES
 # ==========================================
@@ -183,7 +177,7 @@ Resources:
           DOCUMENTS_BUCKET: !Ref DocumentsBucket
           DOCUMENTS_TABLE: !Ref DocumentsTable
           CHUNKS_TABLE: !Ref ChunksTable
-          BEDROCK_GUARDRAIL_ID: !Ref BedrockGuardrailId
+          BEDROCK_GUARDRAIL_ID: !GetAtt PortfolioGuardrail.GuardrailId
       Events:
         # Root endpoint
         RootGet:
@@ -205,7 +199,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref ApiGateway
-            Path: /portfolio
+            Path: /portfolio/chat
             Method: POST
 
         UploadDocument:
@@ -279,6 +273,39 @@ Resources:
                   - "arn:aws:bedrock:*::foundation-model/us.anthropic.claude-3-5-haiku-20241022-v1:0"
                   - !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/us.anthropic.claude-3-5-haiku-20241022-v1:0"
                   - !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:guardrail/*"
+
+  # ------------------------------------------
+  # Bedrock Guardrail
+  # ------------------------------------------
+  PortfolioGuardrail:
+    Type: AWS::Bedrock::Guardrail
+    Properties:
+      Name: !Sub "portfolio-guardrail-${Environment}"
+      Description: "Guardrail for portfolio AI assistant to block off-topic and unsafe queries"
+      BlockedInputMessaging: "Portfolio questions only, please! 😊"
+      BlockedOutputsMessaging: "Portfolio questions only, please! 😊"
+      TopicPolicyConfig:
+        TopicsConfig:
+          - Name: "politics"
+            Definition: "Political discussions including elections, political parties, government policies, political opinions, or public political figures."
+            Type: "DENY"
+          - Name: "personal information"
+            Definition: "Requests for private or sensitive personal information such as phone numbers, home addresses, passwords, identification numbers, salary, expected salary or confidential details."
+            Type: "DENY"
+          - Name: "medical advice"
+            Definition: "Health or medical guidance including diagnosis, treatments, medications, or advice related to medical conditions or healthcare decisions."
+            Type: "DENY"
+          - Name: "illegal activities"
+            Definition: "Requests for instructions or guidance related to illegal activities including hacking, fraud, bypassing security systems, or other unlawful actions."
+            Type: "DENY"
+          - Name: "financial advice"
+            Definition: "Guidance or recommendations related to investing, financial planning, trading, managing money, or financial decision making."
+            Type: "DENY"
+      ContextualGroundingPolicyConfig:
+        FiltersConfig:
+          - Type: "GROUNDING"
+            Threshold: 0.7
+            Action: "BLOCK"
 
 # ==========================================
 # OUTPUTS
