@@ -199,7 +199,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref ApiGateway
-            Path: /portfolio
+            Path: /portfolio/chat
             Method: POST
 
         UploadDocument:
