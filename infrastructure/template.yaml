@@ -301,6 +301,14 @@ Resources:
           - Name: "financial advice"
             Definition: "Guidance or recommendations related to investing, financial planning, trading, managing money, or financial decision making."
             Type: "DENY"
+          - Name: "salary and compensation"
+            Definition: "Questions or discussions about expected salary, compensation expectations, pay range, hourly rate, annual salary, salary requirements, or how much someone earns or expects to earn."
+            Examples:
+              - "What is your expected salary?"
+              - "How much do you charge per hour?"
+              - "What salary range are you targeting?"
+              - "What is your current salary?"
+            Type: "DENY"
       ContextualGroundingPolicyConfig:
         FiltersConfig:
           - Type: "GROUNDING"
