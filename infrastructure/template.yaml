@@ -201,6 +201,13 @@ Resources:
             Path: /documents
             Method: GET
 
+        Portfolio:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /portfolio
+            Method: POST
+
         UploadDocument:
           Type: Api
           Properties:
