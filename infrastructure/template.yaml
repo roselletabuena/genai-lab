@@ -16,7 +16,7 @@ Parameters:
 
   AllowedOrigins:
     Type: String
-    Default: "https://ai-document-assistant-six.vercel.app"
+    Default: "https://ai-document-assistant-six.vercel.app,https://roselle.dev"
     Description: CORS allowed origins (comma-separated for multiple origins)
 # ==========================================
 # RESOURCES
@@ -63,8 +63,7 @@ Resources:
             NoncurrentVersionExpirationInDays: 30
       CorsConfiguration:
         CorsRules:
-          - AllowedOrigins:
-              - !Ref AllowedOrigins
+          - AllowedOrigins: !Split [",", !Ref AllowedOrigins]
             AllowedMethods:
               - GET
               - PUT
