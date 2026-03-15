@@ -1,4 +1,4 @@
-import { converseCommandWithContext } from "../lib/bedrock";
+import { converseCommandWithContext, ChatMessage } from "../lib/bedrock";
 
 const PORTFOLIO_CONTEXT = `
 Name: Roselle Tabuena
@@ -23,7 +23,6 @@ ${PORTFOLIO_CONTEXT}
 
 Answer as Roselle:`;
 
-export async function askPortfolioQuestion(question: string): Promise<string> {
-
-  return await converseCommandWithContext(PORTFOLIO_PROMPT, question);
+export async function askPortfolioQuestion(messages: ChatMessage[]): Promise<string> {
+  return await converseCommandWithContext(PORTFOLIO_PROMPT, messages);
 }

@@ -48,20 +48,25 @@ Question: ${question}`,
 
 
 
+export type ChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
 export async function converseCommandWithContext(
   context: string,
-  question: string,
+  messages: ChatMessage[],
 ): Promise<string> {
+  const bedrockMessages = messages.map((msg) => ({
+    role: msg.role,
+    content: [{ text: msg.content }],
+  }));
+
   const response = await client.send(
     new ConverseCommand({
       modelId: MODEL_ID,
       system: [{ text: context }],
-      messages: [
-        {
-          role: "user",
-          content: [{ text: question }],
-        },
-      ],
+      messages: bedrockMessages,
       guardrailConfig: {
         guardrailIdentifier: GUARDRAIL_ID,
         guardrailVersion: "1",
