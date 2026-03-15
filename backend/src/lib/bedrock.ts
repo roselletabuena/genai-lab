@@ -74,5 +74,10 @@ export async function converseCommandWithContext(
     }),
   );
 
+
+  if (response.stopReason === "guardrail_intervened") {
+    return "That's outside what I can discuss here. Ask me anything about Roselle's background or tech stack instead! 💻";
+  }
+
   return response.output?.message?.content?.[0]?.text || "";
 }
