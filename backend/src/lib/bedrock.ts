@@ -69,7 +69,7 @@ export async function converseCommandWithContext(
       messages: bedrockMessages,
       guardrailConfig: {
         guardrailIdentifier: GUARDRAIL_ID,
-        guardrailVersion: "1",
+        guardrailVersion: "DRAFT",
       },
     }),
   );
