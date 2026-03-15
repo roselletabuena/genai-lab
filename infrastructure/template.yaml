@@ -277,6 +277,7 @@ Resources:
                 Resource:
                   - "arn:aws:bedrock:*::foundation-model/anthropic.claude-3-5-haiku-20241022-v1:0"
                   - "arn:aws:bedrock:*::foundation-model/us.anthropic.claude-3-5-haiku-20241022-v1:0"
+                  - !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/us.anthropic.claude-3-5-haiku-20241022-v1:0"
                   - !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:guardrail/*"
 
 # ==========================================
