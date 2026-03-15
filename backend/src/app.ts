@@ -40,7 +40,7 @@ const appPlugin: FastifyPluginAsync<AppOptions> = async (
       "http://localhost:5173",
       "http://localhost:3000",
       "https://ai.roselle.dev",
-      "https://roselle.dev/"
+      "https://roselle.dev"
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Api-Key"],
