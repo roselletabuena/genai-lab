@@ -60,5 +60,6 @@ jobs:
         working-directory: ./infrastructure
         run: |
           sam deploy \
+            --parameter-overrides Environment=dev AllowedOrigins="*" BedrockGuardrailId=${{ secrets.BEDROCK_GUARDRAIL_ID }} \
             --no-fail-on-empty-changeset \
             --no-confirm-changeset
