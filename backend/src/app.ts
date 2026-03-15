@@ -7,7 +7,7 @@ import cors from "@fastify/cors";
 import Fastify from "fastify";
 
 export interface AppOptions
-  extends FastifyServerOptions, Partial<AutoloadPluginOptions> { }
+  extends FastifyServerOptions, Partial<AutoloadPluginOptions> {}
 
 const options: AppOptions = {
   routerOptions: {
@@ -39,6 +39,7 @@ const appPlugin: FastifyPluginAsync<AppOptions> = async (
       "https://ai-document-assistant-six.vercel.app",
       "http://localhost:5173",
       "http://localhost:3000",
+      "https://ai.roselle.dev",
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Api-Key"],
