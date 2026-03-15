@@ -19,6 +19,11 @@ Parameters:
     Default: "https://ai-document-assistant-six.vercel.app"
     Description: CORS allowed origins (comma-separated for multiple origins)
 
+  BedrockGuardrailId:
+    Type: String
+    Default: ""
+    Description: Bedrock Guardrail ID
+
 # ==========================================
 # RESOURCES
 # ==========================================
@@ -178,6 +183,7 @@ Resources:
           DOCUMENTS_BUCKET: !Ref DocumentsBucket
           DOCUMENTS_TABLE: !Ref DocumentsTable
           CHUNKS_TABLE: !Ref ChunksTable
+          BEDROCK_GUARDRAIL_ID: !Ref BedrockGuardrailId
       Events:
         # Root endpoint
         RootGet:
@@ -260,8 +266,11 @@ Resources:
               - Effect: Allow
                 Action:
                   - "bedrock:InvokeModel"
+                  - "bedrock:ApplyGuardrail"
                 Resource:
-                  - "arn:aws:bedrock:*::foundation-model/anthropic.claude-3-5-sonnet-20241022-v2:0"
+                  - "arn:aws:bedrock:*::foundation-model/anthropic.claude-3-5-haiku-20241022-v1:0"
+                  - "arn:aws:bedrock:*::foundation-model/us.anthropic.claude-3-5-haiku-20241022-v1:0"
+                  - !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:guardrail/*"
 
 # ==========================================
 # OUTPUTS
