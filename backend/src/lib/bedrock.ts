@@ -53,11 +53,31 @@ export type ChatMessage = {
   content: string;
 };
 
+const GUARDRAIL_FALLBACK =
+  "That's outside what I can discuss here. Ask me anything about Roselle's background or tech stack instead! 💻";
+
 export async function converseCommandWithContext(
   context: string,
   messages: ChatMessage[],
 ): Promise<string> {
-  const bedrockMessages = messages.map((msg) => ({
+
+  const cleanMessages: ChatMessage[] = [];
+  for (let i = 0; i < messages.length; i++) {
+    const msg = messages[i];
+    if (
+      msg.role === "assistant" &&
+      msg.content.trim() === GUARDRAIL_FALLBACK.trim()
+    ) {
+      // Also remove the preceding user message that caused the block
+      if (cleanMessages.length > 0 && cleanMessages[cleanMessages.length - 1].role === "user") {
+        cleanMessages.pop();
+      }
+      continue;
+    }
+    cleanMessages.push(msg);
+  }
+
+  const bedrockMessages = cleanMessages.map((msg) => ({
     role: msg.role,
     content: [{ text: msg.content }],
   }));
@@ -74,9 +94,8 @@ export async function converseCommandWithContext(
     }),
   );
 
-
   if (response.stopReason === "guardrail_intervened") {
-    return "That's outside what I can discuss here. Ask me anything about Roselle's background or tech stack instead! 💻";
+    return GUARDRAIL_FALLBACK;
   }
 
   return response.output?.message?.content?.[0]?.text || "";
