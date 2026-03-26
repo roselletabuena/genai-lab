@@ -292,7 +292,6 @@ Resources:
               - "Help me write a Python script."
               - "What is your expected salary?"
               - "Who won the last election?"
-              - "Can you recommend a good recipe?"
               - "What do you think about AI in general?"
             Type: "DENY"
       ContextualGroundingPolicyConfig:
