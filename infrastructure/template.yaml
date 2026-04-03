@@ -110,27 +110,6 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
 
-  ConversationHistoryTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Sub "ai-doc-assistant-conversations-${Environment}"
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: documentId
-          AttributeType: S
-        - AttributeName: timestamp
-          AttributeType: N
-      KeySchema:
-        - AttributeName: documentId
-          KeyType: HASH
-        - AttributeName: timestamp
-          KeyType: RANGE
-      SSESpecification:
-        SSEEnabled: true
-      Tags:
-        - Key: Environment
-          Value: !Ref Environment
-
   ChunksTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -261,8 +240,6 @@ Resources:
                   - !Sub "${DocumentsTable.Arn}/index/*"
                   - !GetAtt ChunksTable.Arn
                   - !Sub "${ChunksTable.Arn}/index/*"
-                  - !GetAtt ConversationHistoryTable.Arn
-                  - !Sub "${ConversationHistoryTable.Arn}/index/"
               - Effect: Allow
                 Action:
                   - "bedrock:InvokeModel"
@@ -286,7 +263,7 @@ Resources:
       TopicPolicyConfig:
         TopicsConfig:
           - Name: "off-topic"
-            Definition: "Any question, request, or discussion that is not specifically about Roselle Tabuena — including her professional background, work experience, technical skills, software projects, education, or career goals. This includes but is not limited to: politics, general programming help, medical advice, financial advice, salary expectations, legal advice, entertainment, sports, cooking, travel, current events, other people, or any other topic unrelated to Roselle."
+            Definition: "Any question that is not directly asking about Roselle Tabuena's professional background, work experience, technical skills, projects, or career history. This includes philosophical questions, general knowledge, coding help, opinions, or personal life questions even if rephrased to be about Roselle."
             Examples:
               - "What is the capital of France?"
               - "Help me write a Python script."
@@ -294,10 +271,24 @@ Resources:
               - "Who won the last election?"
               - "What do you think about AI in general?"
             Type: "DENY"
+      ContentPolicyConfig:
+        FiltersConfig:
+          - Type: "HATE"
+            InputStrength: "HIGH"
+            OutputStrength: "HIGH"
+          - Type: "INSULTS"
+            InputStrength: "HIGH"
+            OutputStrength: "HIGH"
+          - Type: "MISCONDUCT"
+            InputStrength: "HIGH"
+            OutputStrength: "HIGH"
+          - Type: "PROMPT_ATTACK"
+            InputStrength: "HIGH"
+            OutputStrength: "NONE"
       ContextualGroundingPolicyConfig:
         FiltersConfig:
           - Type: "GROUNDING"
-            Threshold: 0.7
+            Threshold: 0.5
             Action: "BLOCK"
 
 # ==========================================
