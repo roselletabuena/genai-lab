@@ -1,15 +1,27 @@
 import {
   BedrockRuntimeClient,
   InvokeModelCommand,
-  ConverseCommand
+  ConverseCommand,
 } from "@aws-sdk/client-bedrock-runtime";
+import { PORTFOLIO_PROMPT } from "../prompts/porfolio-prompt";
 
+import {
+  BedrockAgentRuntimeClient,
+  RetrieveCommand,
+} from "@aws-sdk/client-bedrock-agent-runtime";
+
+const REGION = process.env.AWS_REGION || "us-east-1";
 const client = new BedrockRuntimeClient({
-  region: process.env.AWS_REGION || "us-east-1",
+  region: REGION,
 });
+
+const agentClient = new BedrockAgentRuntimeClient({ region: REGION });
 
 const MODEL_ID = "us.anthropic.claude-3-5-haiku-20241022-v1:0";
 const GUARDRAIL_ID = process.env.BEDROCK_GUARDRAIL_ID;
+const GUARDRAIL_FALLBACK =
+  "That's outside what I can discuss here. Ask me anything about Roselle's background or tech stack instead! 💻";
+const KNOWLEDGE_BASE = process.env.KNOWLEDGE_BASE_ID;
 
 export async function invokeClaudeWithContext(
   context: string,
@@ -18,6 +30,7 @@ export async function invokeClaudeWithContext(
   const prompt = {
     anthropic_version: "bedrock-2023-05-31",
     max_tokens: 4096,
+    temperature: 0,
     messages: [
       {
         role: "user",
@@ -46,36 +59,19 @@ Question: ${question}`,
   return result.content[0].text;
 }
 
-
-
 export type ChatMessage = {
   role: "user" | "assistant";
   content: string;
 };
 
-const GUARDRAIL_FALLBACK =
-  "That's outside what I can discuss here. Ask me anything about Roselle's background or tech stack instead! 💻";
-
 export async function converseCommandWithContext(
-  context: string,
   messages: ChatMessage[],
 ): Promise<string> {
+  const lastUserMessage =
+    messages.filter((m) => m.role === "user").at(-1)?.content || "";
 
-  const cleanMessages: ChatMessage[] = [];
-  for (let i = 0; i < messages.length; i++) {
-    const msg = messages[i];
-    if (
-      msg.role === "assistant" &&
-      msg.content.trim() === GUARDRAIL_FALLBACK.trim()
-    ) {
-      // Also remove the preceding user message that caused the block
-      if (cleanMessages.length > 0 && cleanMessages[cleanMessages.length - 1].role === "user") {
-        cleanMessages.pop();
-      }
-      continue;
-    }
-    cleanMessages.push(msg);
-  }
+  const cleanMessages = cleanGuardrailMessages(messages);
+  const context = await retrieveContext(lastUserMessage);
 
   const bedrockMessages = cleanMessages.map((msg) => ({
     role: msg.role,
@@ -85,8 +81,11 @@ export async function converseCommandWithContext(
   const response = await client.send(
     new ConverseCommand({
       modelId: MODEL_ID,
-      system: [{ text: context }],
+      system: [{ text: PORTFOLIO_PROMPT(context) }],
       messages: bedrockMessages,
+      inferenceConfig: {
+        temperature: 0,
+      },
       guardrailConfig: {
         guardrailIdentifier: GUARDRAIL_ID,
         guardrailVersion: "DRAFT",
@@ -99,4 +98,39 @@ export async function converseCommandWithContext(
   }
 
   return response.output?.message?.content?.[0]?.text || "";
+}
+
+async function retrieveContext(query: string): Promise<string> {
+  const response = await agentClient.send(
+    new RetrieveCommand({
+      knowledgeBaseId: KNOWLEDGE_BASE,
+      retrievalQuery: { text: query },
+      retrievalConfiguration: {
+        vectorSearchConfiguration: { numberOfResults: 3 },
+      },
+    }),
+  );
+
+  return (response.retrievalResults || [])
+    .map((r) => r.content?.text || "")
+    .filter(Boolean)
+    .join("\n\n");
+}
+
+function cleanGuardrailMessages(messages: ChatMessage[]): ChatMessage[] {
+  return messages.reduce<ChatMessage[]>((clean, msg) => {
+    const isGuardrail =
+      msg.role === "assistant" &&
+      msg.content.trim() === GUARDRAIL_FALLBACK.trim();
+
+    if (isGuardrail) {
+      if (clean.at(-1)?.role === "user") {
+        clean.pop();
+      }
+      return clean;
+    }
+
+    clean.push(msg);
+    return clean;
+  }, []);
 }

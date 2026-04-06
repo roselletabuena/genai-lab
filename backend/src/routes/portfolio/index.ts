@@ -36,7 +36,6 @@ const portfolio: FastifyPluginAsync = async (fastify): Promise<void> => {
       const { messages } = request.body;
 
       try {
-
         const truncatedMessages = messages.slice(-CONVERSATION_LIMIT);
 
         const answer = await askPortfolioQuestion(truncatedMessages);
@@ -48,7 +47,7 @@ const portfolio: FastifyPluginAsync = async (fastify): Promise<void> => {
           details: err instanceof Error ? err.message : "Unknown error",
         });
       }
-    }
+    },
   );
 };
 
