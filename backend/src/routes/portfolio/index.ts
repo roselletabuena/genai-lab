@@ -1,10 +1,14 @@
 import { FastifyPluginAsync } from "fastify";
-import { askPortfolioQuestion } from "../../services/portfolioService";
-import { ChatMessage } from "../../lib/bedrock";
+import {
+  askPortfolioQuestion,
+  generateNextSuggestedPrompt,
+} from "../../services/portfolioService";
+import { buildSuggestedPrompt } from "../../prompts/portfolio.prompt";
+import { ChatMessage } from "../../types/portfolio";
 
 const CONVERSATION_LIMIT = 10;
 
-interface PortfolioBody {
+interface chatBody {
   messages: ChatMessage[];
 }
 
@@ -29,7 +33,7 @@ const schema = {
 };
 
 const portfolio: FastifyPluginAsync = async (fastify): Promise<void> => {
-  fastify.post<{ Body: PortfolioBody }>(
+  fastify.post<{ Body: chatBody }>(
     "/chat",
     { schema },
     async (request, reply) => {
@@ -49,6 +53,28 @@ const portfolio: FastifyPluginAsync = async (fastify): Promise<void> => {
       }
     },
   );
+
+  fastify.post<{
+    Body: { conversation: ChatMessage[]; lastMessage: string };
+  }>("/suggested-prompts", {}, async (request, reply) => {
+    const { conversation, lastMessage } = request.body;
+
+    const prompt = buildSuggestedPrompt(conversation, lastMessage);
+    const raw = await generateNextSuggestedPrompt(prompt);
+
+    let parsedOutput;
+
+    try {
+      parsedOutput = JSON.parse(raw);
+    } catch (err) {
+      return reply.code(500).send({
+        error: "Invalid model response",
+        raw,
+      });
+    }
+
+    return reply.send(parsedOutput);
+  });
 };
 
 export default portfolio;

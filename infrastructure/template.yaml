@@ -266,14 +266,22 @@ Resources:
       BlockedOutputsMessaging: "Portfolio questions only, please! 😊"
       TopicPolicyConfig:
         TopicsConfig:
-          - Name: "off-topic"
-            Definition: "Any question that is not directly asking about Roselle Tabuena's professional background, work experience, technical skills, projects, or career history."
+          - Name: "completely-unrelated"
+            Definition: "Topics unrelated to Roselle Tabuena's professional background, skills, work history, or career as a software engineer"
             Examples:
               - "What is the capital of France?"
-              - "Help me write a Python script."
-              - "What is your expected salary?"
-              - "Who won the last election?"
               - "What do you think about AI in general?"
+              - "Write me a poem about the ocean."
+              - "Explain how black holes work."
+            Type: "DENY"
+          - Name: "personal-or-sensitive"
+            Definition: >
+              Questions asking for personal information, salary expectations, or anything unrelated to professional qualifications.
+            Examples:
+              - "What is your expected salary?"
+              - "How old is Roselle?"
+              - "Is Roselle married?"
+              - "Where does Roselle live?"
             Type: "DENY"
       ContentPolicyConfig:
         FiltersConfig:
