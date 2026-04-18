@@ -247,13 +247,16 @@ Resources:
                 Action:
                   - "bedrock:InvokeModel"
                   - "bedrock:ApplyGuardrail"
-                  - "s3vectors:QueryVectors"
-                  - "s3vectors:GetVectors"
-                  - "s3vectors:GetIndex"
                 Resource:
                   - !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/us.anthropic.claude-3-5-haiku-20241022-v1:0"
                   - !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:guardrail/*"
-                  - !GetAtt PortfolioVectorIndex.IndexArn
+              - Effect: Allow
+                Action:
+                  - "s3vectors:GetIndex"
+                  - "s3vectors:QueryVectors"
+                  - "s3vectors:GetVectors"
+                Resource:
+                  - !Sub "arn:aws:s3vectors:${AWS::Region}:${AWS::AccountId}:bucket/portfolio-vectors-${Environment}-${AWS::AccountId}/index/portfolio-index"
 
   # ------------------------------------------
   # Bedrock Guardrail
