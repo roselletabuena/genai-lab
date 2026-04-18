@@ -270,8 +270,8 @@ Resources:
             Definition: "Topics unrelated to Roselle Tabuena's professional background, skills, work history, or career as a software engineer"
             Examples:
               - "What is the capital of France?"
-              - "What do you think about AI in general?"
-              - "Write me a poem about the ocean."
+              - "Help me write a Python script."
+              - "What is your expected salary?"
               - "Explain how black holes work."
             Type: "DENY"
           - Name: "personal-or-sensitive"
