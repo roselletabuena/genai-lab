@@ -250,7 +250,7 @@ Resources:
                   - "s3vectors:QueryVectors"
                   - "s3vectors:GetVectors"
                 Resource:
-                  - "arn:aws:bedrock:*::foundation-model/anthropic.claude-3-5-haiku-20241022-v1:0"
+                  - !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/us.anthropic.claude-3-5-haiku-20241022-v1:0"
                   - !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:guardrail/*"
                   - !GetAtt PortfolioVectorIndex.IndexArn
 
