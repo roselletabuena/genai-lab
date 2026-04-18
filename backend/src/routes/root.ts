@@ -1,7 +1,7 @@
 import { FastifyPluginAsync } from "fastify";
 
-const root: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
-  fastify.get("/", async function (request, reply) {
+const root: FastifyPluginAsync = async (fastify, _): Promise<void> => {
+  fastify.get("/", async function () {
     return {
       service: "AI Document Assistant API",
       status: "healthy",

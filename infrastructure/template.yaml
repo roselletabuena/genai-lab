@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: AI Document Assistant - RAG System Storage Layer
+Description: AI Portfolio
 
 # ==========================================
 # PARAMETERS
@@ -28,7 +28,7 @@ Resources:
   ApiGateway:
     Type: AWS::Serverless::Api
     Properties:
-      Name: !Sub "ai-doc-assistant-api-${Environment}"
+      Name: !Sub "my-ai-stack-api-${Environment}"
       StageName: !Ref Environment
       BinaryMediaTypes:
         - "multipart/form-data"
@@ -38,13 +38,14 @@ Resources:
       TracingEnabled: true
       Tags:
         Environment: !Ref Environment
+
   # ------------------------------------------
   # S3 Bucket
   # ------------------------------------------
   DocumentsBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "ai-doc-assistant-${Environment}-${AWS::AccountId}"
+      BucketName: !Sub "my-ai-stack-${Environment}-${AWS::AccountId}"
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -68,8 +69,6 @@ Resources:
               - GET
               - PUT
               - POST
-            AllowedHeaders:
-              - "*"
             MaxAge: 3600
       Tags:
         - Key: Environment
@@ -110,27 +109,6 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
 
-  ConversationHistoryTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Sub "ai-doc-assistant-conversations-${Environment}"
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: documentId
-          AttributeType: S
-        - AttributeName: timestamp
-          AttributeType: N
-      KeySchema:
-        - AttributeName: documentId
-          KeyType: HASH
-        - AttributeName: timestamp
-          KeyType: RANGE
-      SSESpecification:
-        SSEEnabled: true
-      Tags:
-        - Key: Environment
-          Value: !Ref Environment
-
   ChunksTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -163,7 +141,7 @@ Resources:
   DocumentsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "ai-doc-assistant-api-${Environment}"
+      FunctionName: !Sub "my-ai-stack-api-${Environment}"
       Handler: lambda.handler
       Runtime: nodejs20.x
       CodeUri: ../backend/dist/
@@ -177,6 +155,7 @@ Resources:
           DOCUMENTS_TABLE: !Ref DocumentsTable
           CHUNKS_TABLE: !Ref ChunksTable
           BEDROCK_GUARDRAIL_ID: !GetAtt PortfolioGuardrail.GuardrailId
+          KNOWLEDGE_BASE_ID: !Ref PortfolioKnowledgeBase
       Events:
         # Root endpoint
         RootGet:
@@ -256,22 +235,24 @@ Resources:
                   - "dynamodb:DeleteItem"
                   - "dynamodb:Query"
                   - "dynamodb:BatchWriteItem"
+                  - "bedrock:Retrieve"
+                  - "bedrock:RetrieveAndGenerate"
                 Resource:
                   - !GetAtt DocumentsTable.Arn
                   - !Sub "${DocumentsTable.Arn}/index/*"
                   - !GetAtt ChunksTable.Arn
                   - !Sub "${ChunksTable.Arn}/index/*"
-                  - !GetAtt ConversationHistoryTable.Arn
-                  - !Sub "${ConversationHistoryTable.Arn}/index/"
+                  - !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:knowledge-base/*"
               - Effect: Allow
                 Action:
                   - "bedrock:InvokeModel"
                   - "bedrock:ApplyGuardrail"
+                  - "s3vectors:QueryVectors"
+                  - "s3vectors:GetVectors"
                 Resource:
                   - "arn:aws:bedrock:*::foundation-model/anthropic.claude-3-5-haiku-20241022-v1:0"
-                  - "arn:aws:bedrock:*::foundation-model/us.anthropic.claude-3-5-haiku-20241022-v1:0"
-                  - !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/us.anthropic.claude-3-5-haiku-20241022-v1:0"
                   - !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:guardrail/*"
+                  - !GetAtt PortfolioVectorIndex.IndexArn
 
   # ------------------------------------------
   # Bedrock Guardrail
@@ -285,33 +266,143 @@ Resources:
       BlockedOutputsMessaging: "Portfolio questions only, please! 😊"
       TopicPolicyConfig:
         TopicsConfig:
-          - Name: "off-topic"
-            Definition: "Any question, request, or discussion that is not specifically about Roselle Tabuena — including her professional background, work experience, technical skills, software projects, education, or career goals. This includes but is not limited to: politics, general programming help, medical advice, financial advice, salary expectations, legal advice, entertainment, sports, cooking, travel, current events, other people, or any other topic unrelated to Roselle."
+          - Name: "completely-unrelated"
+            Definition: "Topics unrelated to Roselle Tabuena's professional background, skills, work history, or career as a software engineer"
             Examples:
               - "What is the capital of France?"
               - "Help me write a Python script."
               - "What is your expected salary?"
-              - "Who won the last election?"
-              - "What do you think about AI in general?"
+              - "Explain how black holes work."
             Type: "DENY"
-      ContextualGroundingPolicyConfig:
+          - Name: "personal-or-sensitive"
+            Definition: >
+              Questions asking for personal information, salary expectations, or anything unrelated to professional qualifications.
+            Examples:
+              - "What is your expected salary?"
+              - "How old is Roselle?"
+              - "Is Roselle married?"
+              - "Where does Roselle live?"
+            Type: "DENY"
+      ContentPolicyConfig:
         FiltersConfig:
-          - Type: "GROUNDING"
-            Threshold: 0.7
-            Action: "BLOCK"
+          - Type: "HATE"
+            InputStrength: "HIGH"
+            OutputStrength: "HIGH"
+          - Type: "INSULTS"
+            InputStrength: "HIGH"
+            OutputStrength: "HIGH"
+          - Type: "MISCONDUCT"
+            InputStrength: "HIGH"
+            OutputStrength: "HIGH"
+          - Type: "PROMPT_ATTACK"
+            InputStrength: "HIGH"
+            OutputStrength: "NONE"
 
+  # ------------------------------------------
+  # S3 Vectors (Vector Store)
+  # ------------------------------------------
+  PortfolioVectorBucket:
+    Type: AWS::S3Vectors::VectorBucket
+    Properties:
+      VectorBucketName: !Sub "portfolio-vectors-${Environment}-${AWS::AccountId}"
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  PortfolioVectorIndex:
+    Type: AWS::S3Vectors::Index
+    Properties:
+      VectorBucketArn: !GetAtt PortfolioVectorBucket.VectorBucketArn
+      IndexName: "portfolio-index"
+      Dimension: 1024
+      DataType: float32
+      DistanceMetric: cosine
+
+  # ------------------------------------------
+  # IAM Role for Knowledge Base
+  # ------------------------------------------
+  KnowledgeBaseRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "portfolio-kb-role-${Environment}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: bedrock.amazonaws.com
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: KnowledgeBaseAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "s3:GetObject"
+                  - "s3:ListBucket"
+                Resource:
+                  - !GetAtt DocumentsBucket.Arn
+                  - !Sub "${DocumentsBucket.Arn}/*"
+              - Effect: Allow
+                Action:
+                  - "bedrock:InvokeModel"
+                Resource:
+                  - !Sub "arn:aws:bedrock:${AWS::Region}::foundation-model/amazon.titan-embed-text-v2:0"
+              - Effect: Allow
+                Action:
+                  - "s3vectors:PutVectors"
+                  - "s3vectors:GetVectors"
+                  - "s3vectors:DeleteVectors"
+                  - "s3vectors:QueryVectors"
+                  - "s3vectors:ListVectors"
+                Resource:
+                  - !Sub "arn:aws:s3vectors:${AWS::Region}:${AWS::AccountId}:bucket/portfolio-vectors-${Environment}-${AWS::AccountId}/index/portfolio-index"
+
+  # ------------------------------------------
+  # Bedrock Knowledge Base
+  # ------------------------------------------
+  PortfolioKnowledgeBase:
+    Type: AWS::Bedrock::KnowledgeBase
+    DependsOn: PortfolioVectorIndex
+    Properties:
+      Name: !Sub "portfolio-kb-${Environment}"
+      Description: "Knowledge base for Roselle's portfolio documents"
+      RoleArn: !GetAtt KnowledgeBaseRole.Arn
+      KnowledgeBaseConfiguration:
+        Type: VECTOR
+        VectorKnowledgeBaseConfiguration:
+          EmbeddingModelArn: !Sub "arn:aws:bedrock:${AWS::Region}::foundation-model/amazon.titan-embed-text-v2:0"
+      StorageConfiguration:
+        Type: S3_VECTORS
+        S3VectorsConfiguration:
+          IndexArn: !GetAtt PortfolioVectorIndex.IndexArn
+
+  PortfolioDataSource:
+    Type: AWS::Bedrock::DataSource
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      Name: !Sub "portfolio-docs-${Environment}-${AWS::StackName}"
+      KnowledgeBaseId: !Ref PortfolioKnowledgeBase
+      DataSourceConfiguration:
+        Type: S3
+        S3Configuration:
+          BucketArn: !GetAtt DocumentsBucket.Arn
+          InclusionPrefixes:
+            - "portfolio/"
+      VectorIngestionConfiguration:
+        ChunkingConfiguration:
+          ChunkingStrategy: FIXED_SIZE
+          FixedSizeChunkingConfiguration:
+            MaxTokens: 400
+            OverlapPercentage: 10
 # ==========================================
 # OUTPUTS
 # ==========================================
 Outputs:
   DocumentsBucketName:
     Value: !Ref DocumentsBucket
-
-  DocumentsTableName:
-    Value: !Ref DocumentsTable
-
-  ChunksTableName:
-    Value: !Ref ChunksTable
 
   AppRoleArn:
     Value: !GetAtt AppRole.Arn
@@ -330,3 +421,9 @@ Outputs:
   DocumentsFunctionArn:
     Description: "Lambda Function ARN"
     Value: !GetAtt DocumentsFunction.Arn
+
+  KnowledgeBaseId:
+    Value: !Ref PortfolioKnowledgeBase
+
+  VectorBucketName:
+    Value: !Sub "portfolio-vectors-${Environment}-${AWS::AccountId}"

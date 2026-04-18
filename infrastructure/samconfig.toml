@@ -1,10 +1,10 @@
 version = 0.1
 
 [default.deploy.parameters]
-stack_name = "ai-document-assistant"
+stack_name = "my-ai-stack"
 resolve_s3 = true
-s3_prefix = "ai-document-assistant"
+s3_prefix = "my-portfolio-doc"
 region = "us-east-1"
-capabilities = "CAPABILITY_IAM"
+capabilities = "CAPABILITY_IAM CAPABILITY_NAMED_IAM"
 parameter_overrides = "Environment=\"dev\" AllowedOrigins=\"*\""
 image_repositories = []
