@@ -248,7 +248,8 @@ Resources:
                   - "bedrock:InvokeModel"
                   - "bedrock:ApplyGuardrail"
                 Resource:
-                  - !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:inference-profile/us.anthropic.claude-3-5-haiku-20241022-v1:0"
+                  - !Sub "arn:aws:bedrock:${AWS::Region}::inference-profile/*"
+                  - !Sub "arn:aws:bedrock:${AWS::Region}::foundation-model/*"
                   - !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:guardrail/*"
               - Effect: Allow
                 Action:
