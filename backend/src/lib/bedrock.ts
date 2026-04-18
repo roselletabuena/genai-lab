@@ -69,11 +69,10 @@ export async function chat(messages: ChatMessage[]): Promise<string> {
       },
     }),
   );
-  const trace = response.trace?.guardrail;
-  console.log("trace: ", JSON.stringify(trace, null, 2));
-  // if (response.stopReason === "guardrail_intervened") {
-  //   return GUARDRAIL_FALLBACK;
-  // }
+
+  if (response.stopReason === "guardrail_intervened") {
+    return GUARDRAIL_FALLBACK;
+  }
 
   return response.output?.message?.content?.[0]?.text || "";
 }
