@@ -21,20 +21,25 @@ ${context}
 Answer as Roselle's assistant. If unsure whether a question is about Roselle, default to: "Portfolio questions only, please! 😊"`;
 
 const QUESTION_BANK = `
-Skills & Technical Expertise:
-- What are the candidate’s key skills?
-- What is the candidate currently learning?
-- Which frameworks and tools does the candidate use?
+Quick Overview:
+- What does this person specialize in?
+- What kind of problems do they enjoy solving?
+- What are they currently focused on learning?
 
-Experience & Problem-Solving:
-- What kinds of systems has the candidate worked on?
-- What impact has the candidate made?
-- How do they approach software development?
+Work & Impact:
+- What kinds of projects has she worked on recently?
+- What impact has her work had?
+- How does she typically approach building software?
 
-Role Fit & Professional Intent:
-- What roles is the candidate seeking?
-- What is their availability?
-- Are they open to remote or onsite work?`;
+Tools & Stack:
+- What technologies does she use most often?
+- Which frameworks or tools does she prefer?
+
+Fit & Availability:
+- What roles is she looking for right now?
+- Is she available for new opportunities?
+- Does she prefer remote, onsite, or hybrid work?
+`;
 
 export const buildSuggestedPrompt = (
   conversation: ChatMessage[],
@@ -44,16 +49,22 @@ export const buildSuggestedPrompt = (
     .filter((m) => m.role === "user")
     .map((m) => m.content.trim());
 
-  return `You are a follow-up question selector for a recruiter chatbot.
+  return `You are a portfolio assistant helping recruiters or clients explore a candidate.
+
+Your job is to suggest ONE natural, human-sounding prompt line with clickable questions.
 
 RULES:
-- Select EXACTLY 3 questions from the question bank
-- NEVER select a question already asked by the user
+- Return EXACTLY 1 prompt line
+- Include:
+  - A short intro (5–8 words, conversational tone)
+  - EXACTLY 2 questions from the question bank
+- NEVER select a question already asked
 - DO NOT modify question wording
 - DO NOT create new questions
-- Return ONLY a raw JSON array of 3 strings, no markdown, no explanation
+- Intro should invite curiosity (e.g. "Want to...", "Curious about...", "Need a quick sense?")
+- Return ONLY raw JSON (no markdown, no explanation)
 
-ALREADY ASKED (exclude these):
+ALREADY ASKED:
 ${JSON.stringify(askedQuestions)}
 
 LAST ASSISTANT MESSAGE:
@@ -63,5 +74,8 @@ QUESTION BANK:
 ${JSON.stringify(QUESTION_BANK)}
 
 OUTPUT FORMAT:
-["question 1", "question 2", "question 3"]`;
+{
+  "intro": "Short conversational intro",
+  "questions": ["question 1", "question 2"]
+}`;
 };

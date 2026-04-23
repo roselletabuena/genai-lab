@@ -248,8 +248,8 @@ Resources:
                   - "bedrock:InvokeModel"
                   - "bedrock:ApplyGuardrail"
                 Resource:
-                  - !Sub "arn:aws:bedrock:${AWS::Region}::inference-profile/*"
-                  - !Sub "arn:aws:bedrock:${AWS::Region}::foundation-model/*"
+                  - !Sub "arn:aws:bedrock:*:${AWS::AccountId}:inference-profile/*"
+                  - !Sub "arn:aws:bedrock:*::foundation-model/*"
                   - !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:guardrail/*"
               - Effect: Allow
                 Action:
