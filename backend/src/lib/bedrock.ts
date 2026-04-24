@@ -61,11 +61,13 @@ export async function chat(messages: ChatMessage[]): Promise<string> {
       messages: bedrockMessages,
       inferenceConfig: {
         temperature: 0,
+        maxTokens: 150,
+        stopSequences: ["\n\n\n"],
       },
       guardrailConfig: {
         guardrailIdentifier: GUARDRAIL_ID,
         guardrailVersion: "DRAFT",
-        trace: "enabled",
+        trace: "disabled",
       },
     }),
   );
