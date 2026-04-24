@@ -62,7 +62,6 @@ export async function chat(messages: ChatMessage[]): Promise<string> {
       inferenceConfig: {
         temperature: 0,
         maxTokens: 150,
-        stopSequences: ["\n\n\n"],
       },
       guardrailConfig: {
         guardrailIdentifier: GUARDRAIL_ID,
