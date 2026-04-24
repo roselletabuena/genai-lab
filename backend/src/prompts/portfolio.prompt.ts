@@ -63,7 +63,7 @@ export const buildSuggestedPrompt = (
     (q) => !askedSet.has(normalize(q)),
   );
 
-  if (availableQuestions.length === 0) return {};
+  if (availableQuestions.length === 0) return { intro: "", questions: [] };
 
   const count = Math.min(2, availableQuestions.length);
 
