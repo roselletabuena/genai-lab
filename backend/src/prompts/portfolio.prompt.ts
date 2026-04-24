@@ -63,8 +63,7 @@ export const buildSuggestedPrompt = (
     (q) => !askedSet.has(normalize(q)),
   );
 
-  if (availableQuestions.length === 0) return { intro: "", questions: [] };
-
+  if (availableQuestions.length === 0) return null;
   const count = Math.min(2, availableQuestions.length);
 
   return `You are a portfolio assistant helping recruiters and clients learn more about a candidate.

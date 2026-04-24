@@ -60,6 +60,7 @@ const portfolio: FastifyPluginAsync = async (fastify): Promise<void> => {
     const { conversation, lastMessage } = request.body;
 
     const prompt = buildSuggestedPrompt(conversation, lastMessage);
+    if (prompt == null) return {};
     const raw = await generateNextSuggestedPrompt(prompt);
 
     let parsedOutput;
