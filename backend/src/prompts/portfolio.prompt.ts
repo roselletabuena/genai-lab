@@ -63,27 +63,32 @@ export const buildSuggestedPrompt = (
     (q) => !askedSet.has(normalize(q)),
   );
 
-  return `You are a portfolio assistant helping recruiters or clients explore a candidate.
+  if (availableQuestions.length === 0) return {};
 
-Suggest EXACTLY ONE short follow-up prompt.
+  const count = Math.min(2, availableQuestions.length);
 
-Rules:
-- Return ONLY raw JSON
-- Do not use markdown
-- Use this schema exactly:
+  return `You are a portfolio assistant helping recruiters and clients learn more about a candidate.
+
+Your task: suggest a short, natural follow-up based on the assistant's last message.
+
+## Output Format
+Return ONLY a valid JSON object. No markdown, no explanation, no extra text.
+
+Schema:
 {
-  "intro": "Short conversational intro",
-  "questions": ["question 1", "question 2"]
+  "intro": "<5 to 8 word conversational lead-in>",
+  "questions": ["<question 1>", "<question 2>"]
 }
-- "intro" must be 5 to 8 words
-- "questions" must contain EXACTLY 2 items
-- Select questions ONLY from AVAILABLE_QUESTIONS
-- Do NOT rewrite, paraphrase, or invent questions
-- Do NOT repeat any asked question
-- Do NOT include duplicates
-- Prefer broad, high-value questions not already covered
-- If fewer than 2 questions remain, return as many as remain
 
+## Rules
+1. "intro" must be exactly 5–8 words — a warm, natural conversation starter
+2. "questions" must contain EXACTLY ${count} item(s)
+3. Every question MUST be copied verbatim from AVAILABLE_QUESTIONS — no rewrites, no paraphrasing, no invented questions
+4. Do NOT repeat questions already asked in the conversation
+5. Prefer broad, high-value questions that give the most useful overview of the candidate
+6. Do NOT include duplicate questions in the output
+
+## Context
 LAST_ASSISTANT_MESSAGE:
 ${JSON.stringify(lastMessage)}
 
