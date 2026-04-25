@@ -32,7 +32,6 @@ If unsure, default to asking the user to rephrase toward her professional backgr
 `;
 
 const QUESTION_BANK = [
-  "What does she specialize in?",
   "What kind of problems does she enjoy solving?",
   "What is she currently focused on learning?",
   "What kinds of projects has she worked on recently?",
@@ -40,7 +39,6 @@ const QUESTION_BANK = [
   "How does she typically approach building software?",
   "What technologies does she use most often?",
   "Which frameworks or tools does she prefer?",
-  "What roles is she looking for right now?",
   "Is she available for new opportunities?",
   "Does she prefer remote, onsite, or hybrid work?",
 ];

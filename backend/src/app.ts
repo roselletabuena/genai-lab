@@ -1,13 +1,12 @@
 import { join } from "node:path";
 import AutoLoad, { AutoloadPluginOptions } from "@fastify/autoload";
 import { FastifyPluginAsync, FastifyServerOptions } from "fastify";
-import fastifyEnv from "@fastify/env";
 import multipart from "@fastify/multipart";
 import cors from "@fastify/cors";
 import Fastify from "fastify";
 
 export interface AppOptions
-  extends FastifyServerOptions, Partial<AutoloadPluginOptions> { }
+  extends FastifyServerOptions, Partial<AutoloadPluginOptions> {}
 
 const options: AppOptions = {
   routerOptions: {
@@ -19,20 +18,6 @@ const appPlugin: FastifyPluginAsync<AppOptions> = async (
   fastify,
   opts,
 ): Promise<void> => {
-  await fastify.register(fastifyEnv, {
-    dotenv: true,
-    schema: {
-      type: "object",
-      required: [],
-      properties: {
-        LOCALSTACK_ENDPOINT: { type: "string" },
-        AWS_REGION: { type: "string" },
-        DOCUMENTS_BUCKET: { type: "string" },
-        NODE_ENV: { type: "string" },
-      },
-    },
-  });
-
   await fastify.register(multipart);
   await fastify.register(cors, {
     origin: [
@@ -40,7 +25,7 @@ const appPlugin: FastifyPluginAsync<AppOptions> = async (
       "http://localhost:5173",
       "http://localhost:3000",
       "https://ai.roselle.dev",
-      "https://roselle.dev"
+      "https://roselle.dev",
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Api-Key"],
