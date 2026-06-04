@@ -17,7 +17,7 @@ const MODEL_ID = "us.anthropic.claude-haiku-4-5-20251001-v1:0";
 const FAST_MODEL_ID = "us.amazon.nova-micro-v1:0";
 
 const GUARDRAIL_FALLBACK =
-  "That's outside what I can discuss here. Ask me anything about Roselle's background or tech stack instead! 💻";
+  "Woof! That's outside what I can sniff out or discuss here. Ask me anything about Roselle's background or tech stack instead! 🐾";
 
 const client = new BedrockRuntimeClient({ region: REGION });
 const agentClient = new BedrockAgentRuntimeClient({ region: REGION });
