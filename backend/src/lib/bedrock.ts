@@ -49,33 +49,109 @@ export async function chat(messages: ChatMessage[]): Promise<string> {
   const sanitizedMessages = stripGuardrailTurns(messages);
   const context = await retrieveKnowledgeBaseContext(lastUserMessage);
 
-  const bedrockMessages = sanitizedMessages.map((message) => ({
+  const bedrockMessages: any[] = sanitizedMessages.map((message) => ({
     role: message.role,
     content: [{ text: message.content }],
   }));
 
-  const response = await client.send(
-    new ConverseCommand({
-      modelId: MODEL_ID,
-      system: [{ text: buildAssistantPrompt(context) }],
-      messages: bedrockMessages,
-      inferenceConfig: {
-        temperature: 0,
-        maxTokens: 150,
-      },
-      guardrailConfig: {
-        guardrailIdentifier: GUARDRAIL_ID,
-        guardrailVersion: "DRAFT",
-        trace: "disabled",
-      },
-    }),
-  );
+  const system = [{ text: buildAssistantPrompt(context) }];
 
-  if (response.stopReason === "guardrail_intervened") {
-    return GUARDRAIL_FALLBACK;
+  const toolConfig = {
+    tools: [
+      {
+        toolSpec: {
+          name: "get_calendar_link",
+          description: "Retrieves the Cal.com scheduling page URL for booking a meeting or scheduling an interview with Roselle Tabuena.",
+          inputSchema: {
+            json: {
+              type: "object",
+              properties: {},
+            },
+          },
+        },
+      },
+    ],
+  };
+
+  let loop = true;
+  let turns = 0;
+  const maxTurns = 5;
+
+  while (loop && turns < maxTurns) {
+    turns++;
+    const response = await client.send(
+      new ConverseCommand({
+        modelId: MODEL_ID,
+        system,
+        messages: bedrockMessages,
+        inferenceConfig: {
+          temperature: 0,
+          maxTokens: 300,
+        },
+        guardrailConfig: {
+          guardrailIdentifier: GUARDRAIL_ID,
+          guardrailVersion: "DRAFT",
+          trace: "disabled",
+        },
+        toolConfig,
+      }),
+    );
+
+    if (response.stopReason === "guardrail_intervened") {
+      return GUARDRAIL_FALLBACK;
+    }
+
+    const outputMessage = response.output?.message;
+    if (!outputMessage) {
+      break;
+    }
+
+    bedrockMessages.push(outputMessage);
+
+    if (response.stopReason === "tool_use") {
+      const toolRequests = outputMessage.content?.filter((c) => "toolUse" in c);
+      if (toolRequests && toolRequests.length > 0) {
+        const resultsContent: any[] = [];
+        for (const req of toolRequests) {
+          const toolUse = req.toolUse;
+          if (!toolUse) continue;
+
+          let toolResultData: any = {};
+          if (toolUse.name === "get_calendar_link") {
+            const calendarUrl = process.env.CALENDAR_URL || "https://cal.com/roselle-tabuena/15min";
+            toolResultData = {
+              calendarUrl,
+              message: "Please share this link with the user to book a meeting on Roselle's calendar."
+            };
+          }
+
+          resultsContent.push({
+            toolResult: {
+              toolUseId: toolUse.toolUseId,
+              status: "success",
+              content: [
+                {
+                  json: toolResultData
+                }
+              ]
+            }
+          });
+        }
+
+        bedrockMessages.push({
+          role: "user",
+          content: resultsContent,
+        });
+      } else {
+        loop = false;
+      }
+    } else {
+      loop = false;
+      return outputMessage.content?.[0]?.text || "";
+    }
   }
 
-  return response.output?.message?.content?.[0]?.text || "";
+  return "I'm sorry, I couldn't complete your request at this time. Please try again.";
 }
 
 async function retrieveKnowledgeBaseContext(query: string): Promise<string> {
