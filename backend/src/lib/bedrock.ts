@@ -69,7 +69,8 @@ export async function chat(messages: ChatMessage[]): Promise<ChatResult> {
       {
         toolSpec: {
           name: "get_calendar_link",
-          description: "Retrieves the Cal.com scheduling page URL for booking a meeting or scheduling an interview with Roselle Tabuena.",
+          description:
+            "Retrieves the Cal.com scheduling page URL for booking a meeting or scheduling an interview with Roselle Tabuena.",
           inputSchema: {
             json: {
               type: "object",
@@ -127,11 +128,13 @@ export async function chat(messages: ChatMessage[]): Promise<ChatResult> {
 
           let toolResultData: any = {};
           if (toolUse.name === "get_calendar_link") {
-            const calendarUrl = process.env.CALENDAR_URL || "https://cal.com/roselle-tabuena/30min";
+            const calendarUrl =
+              process.env.CALENDAR_URL ||
+              "https://cal.com/roselle-tabuena/30min";
             calendarUrlUsed = calendarUrl;
             toolResultData = {
-              calendarUrl,
-              message: "Please share this link with the user to book a meeting on Roselle's calendar."
+              message:
+                "A calendar widget is available for booking a meeting with Roselle.",
             };
           }
 
@@ -141,10 +144,10 @@ export async function chat(messages: ChatMessage[]): Promise<ChatResult> {
               status: "success",
               content: [
                 {
-                  json: toolResultData
-                }
-              ]
-            }
+                  json: toolResultData,
+                },
+              ],
+            },
           });
         }
 
@@ -157,14 +160,23 @@ export async function chat(messages: ChatMessage[]): Promise<ChatResult> {
       }
     } else {
       loop = false;
+      const answer = outputMessage.content?.[0]?.text || "";
+      const sanitizedAnswer = calendarUrlUsed
+        ? answer.split(calendarUrlUsed).join("").replace(/\s+/g, " ").trim()
+        : answer;
       return {
-        answer: outputMessage.content?.[0]?.text || "",
-        uiWidget: calendarUrlUsed ? { type: "calendar", url: calendarUrlUsed } : undefined
+        answer: sanitizedAnswer,
+        uiWidget: calendarUrlUsed
+          ? { type: "calendar", url: calendarUrlUsed }
+          : undefined,
       };
     }
   }
 
-  return { answer: "I'm sorry, I couldn't complete your request at this time. Please try again." };
+  return {
+    answer:
+      "I'm sorry, I couldn't complete your request at this time. Please try again.",
+  };
 }
 
 async function retrieveKnowledgeBaseContext(query: string): Promise<string> {
