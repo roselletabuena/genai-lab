@@ -42,8 +42,8 @@ const portfolio: FastifyPluginAsync = async (fastify): Promise<void> => {
       try {
         const truncatedMessages = messages.slice(-CONVERSATION_LIMIT);
 
-        const answer = await askPortfolioQuestion(truncatedMessages);
-        return { answer };
+        const result = await askPortfolioQuestion(truncatedMessages);
+        return result;
       } catch (err) {
         request.log.error(err);
         return reply.code(500).send({

@@ -42,7 +42,15 @@ export async function invokeSingleTurnPrompt(prompt: string): Promise<string> {
   return response.output?.message?.content?.[0]?.text ?? "";
 }
 
-export async function chat(messages: ChatMessage[]): Promise<string> {
+export interface ChatResult {
+  answer: string;
+  uiWidget?: {
+    type: "calendar";
+    url: string;
+  };
+}
+
+export async function chat(messages: ChatMessage[]): Promise<ChatResult> {
   const lastUserMessage =
     messages.filter((m) => m.role === "user").at(-1)?.content || "";
 
@@ -76,6 +84,7 @@ export async function chat(messages: ChatMessage[]): Promise<string> {
   let loop = true;
   let turns = 0;
   const maxTurns = 5;
+  let calendarUrlUsed: string | undefined = undefined;
 
   while (loop && turns < maxTurns) {
     turns++;
@@ -98,7 +107,7 @@ export async function chat(messages: ChatMessage[]): Promise<string> {
     );
 
     if (response.stopReason === "guardrail_intervened") {
-      return GUARDRAIL_FALLBACK;
+      return { answer: GUARDRAIL_FALLBACK };
     }
 
     const outputMessage = response.output?.message;
@@ -118,7 +127,8 @@ export async function chat(messages: ChatMessage[]): Promise<string> {
 
           let toolResultData: any = {};
           if (toolUse.name === "get_calendar_link") {
-            const calendarUrl = process.env.CALENDAR_URL || "https://cal.com/roselle-tabuena/15min";
+            const calendarUrl = process.env.CALENDAR_URL || "https://cal.com/roselle-tabuena/30min";
+            calendarUrlUsed = calendarUrl;
             toolResultData = {
               calendarUrl,
               message: "Please share this link with the user to book a meeting on Roselle's calendar."
@@ -147,11 +157,14 @@ export async function chat(messages: ChatMessage[]): Promise<string> {
       }
     } else {
       loop = false;
-      return outputMessage.content?.[0]?.text || "";
+      return {
+        answer: outputMessage.content?.[0]?.text || "",
+        uiWidget: calendarUrlUsed ? { type: "calendar", url: calendarUrlUsed } : undefined
+      };
     }
   }
 
-  return "I'm sorry, I couldn't complete your request at this time. Please try again.";
+  return { answer: "I'm sorry, I couldn't complete your request at this time. Please try again." };
 }
 
 async function retrieveKnowledgeBaseContext(query: string): Promise<string> {
