@@ -13,7 +13,7 @@ import {
 const GUARDRAIL_ID = process.env.BEDROCK_GUARDRAIL_ID;
 const KNOWLEDGE_BASE = process.env.KNOWLEDGE_BASE_ID;
 const REGION = process.env.AWS_REGION || "us-east-1";
-const MODEL_ID = "us.anthropic.claude-3-5-haiku-20241022-v1:0";
+const MODEL_ID = "us.anthropic.claude-haiku-4-5-20251001-v1:0";
 const FAST_MODEL_ID = "us.amazon.nova-micro-v1:0";
 
 const GUARDRAIL_FALLBACK =
