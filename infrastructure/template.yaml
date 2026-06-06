@@ -285,7 +285,7 @@ Resources:
                   - "s3vectors:QueryVectors"
                   - "s3vectors:GetVectors"
                 Resource:
-                  - !Sub "arn:aws:s3vectors:${AWS::Region}:${AWS::AccountId}:bucket/portfolio-vectors-${Environment}-${AWS::AccountId}/index/portfolio-index"
+                  - !GetAtt PortfolioVectorIndex.IndexArn
 
   # ------------------------------------------
   # Bedrock Guardrail
@@ -346,7 +346,7 @@ Resources:
     Type: AWS::S3Vectors::Index
     Properties:
       VectorBucketArn: !GetAtt PortfolioVectorBucket.VectorBucketArn
-      IndexName: "portfolio-index"
+      IndexName: "portfolio-index-v2"
       Dimension: 1024
       DataType: float32
       DistanceMetric: cosine
@@ -394,7 +394,7 @@ Resources:
                   - "s3vectors:QueryVectors"
                   - "s3vectors:ListVectors"
                 Resource:
-                  - !Sub "arn:aws:s3vectors:${AWS::Region}:${AWS::AccountId}:bucket/portfolio-vectors-${Environment}-${AWS::AccountId}/index/portfolio-index"
+                  - !GetAtt PortfolioVectorIndex.IndexArn
 
   # ------------------------------------------
   # Bedrock Knowledge Base
