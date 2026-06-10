@@ -300,8 +300,7 @@ Resources:
       TopicPolicyConfig:
         TopicsConfig:
           - Name: "completely-unrelated"
-            Definition: >
-              Topics completely unrelated to Roselle Tabuena's professional background, technical skills, work history, coding projects, or career as a software engineer. Do not block topics about her learning, education, career goals, or technical interests.
+            Definition: "Topics unrelated to Roselle Tabuena's professional background, skills, work history, or career as a software engineer"
             Examples:
               - "What is the capital of France?"
               - "Help me write a Python script."
@@ -310,7 +309,7 @@ Resources:
             Type: "DENY"
           - Name: "personal-or-sensitive"
             Definition: >
-              Questions asking for private personal details such as physical address, age, marital status, political views, family, or financial/salary expectations. Do not block professional questions about her career growth, learning objectives, skills development, or work history.
+              Questions asking for personal information, salary expectations, or anything unrelated to professional qualifications.
             Examples:
               - "What is your expected salary?"
               - "How old is Roselle?"
