@@ -300,21 +300,22 @@ Resources:
       TopicPolicyConfig:
         TopicsConfig:
           - Name: "completely-unrelated"
-            Definition: "Topics unrelated to Roselle Tabuena's professional background, skills, work history, or career as a software engineer"
+            Definition: "General trivia, weather, math, science, history, or requests to write generic code, essays, or poems unrelated to Roselle Tabuena's software engineering background."
             Examples:
               - "What is the capital of France?"
               - "Help me write a Python script."
-              - "What is your expected salary?"
               - "Explain how black holes work."
+              - "Write a poem about trees."
+              - "What is the weather like?"
             Type: "DENY"
           - Name: "personal-or-sensitive"
-            Definition: >
-              Questions asking for personal information, salary expectations, or anything unrelated to professional qualifications.
+            Definition: "Inquiries about Roselle's private life, family members, relationships, age, home address, phone, or specific salary. This is for non-professional intimate personal information."
             Examples:
               - "What is your expected salary?"
               - "How old is Roselle?"
               - "Is Roselle married?"
               - "Where does Roselle live?"
+              - "Does she have a sibling?"
             Type: "DENY"
       ContentPolicyConfig:
         FiltersConfig:
