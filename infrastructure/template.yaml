@@ -13,10 +13,10 @@ Parameters:
       - dev
       - prod
     Description: Deployment environment
-#  InternalApiKey:
-#    Type: String
-#    NoEcho: true
-#    Description: Secret key sent by Next.js server to API Gateway
+  InternalApiKey:
+    Type: String
+    NoEcho: true
+    Description: Secret key sent by Next.js server to API Gateway
 
   AllowedOrigins:
     Type: String
@@ -30,34 +30,34 @@ Resources:
   # API Gateway
   # ------------------------------------------
 
-#  ApiAuthorizerFunction:
-#    Type: AWS::Serverless::Function
-#    Properties:
-#      FunctionName: !Sub "my-ai-stack-authorizer-${Environment}"
-#      Handler: authorizer.handler
-#      Runtime: nodejs22.x
-#      CodeUri: ../backend/dist/
-#      MemorySize: 128
-#      Timeout: 5
-#      Environment:
-#        Variables:
-#          INTERNAL_API_KEY: !Ref InternalApiKey
+  ApiAuthorizerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "my-ai-stack-authorizer-${Environment}"
+      Handler: authorizer.handler
+      Runtime: nodejs22.x
+      CodeUri: ../backend/dist/
+      MemorySize: 128
+      Timeout: 5
+      Environment:
+        Variables:
+          INTERNAL_API_KEY: !Ref InternalApiKey
 
   ApiGateway:
     Type: AWS::Serverless::Api
     Properties:
       Name: !Sub "my-ai-stack-api-${Environment}"
       StageName: !Ref Environment
-#      Auth:
-#        DefaultAuthorizer: InternalApiAuthorizer
-#        Authorizers:
-#          InternalApiAuthorizer:
-#            FunctionArn: !GetAtt ApiAuthorizerFunction.Arn
-#            FunctionPayloadType: REQUEST
-#            Identity:
-#              Headers:
-#                - x-internal-api-key
-#              ReauthorizeEvery: 0
+      Auth:
+        DefaultAuthorizer: InternalApiAuthorizer
+        Authorizers:
+          InternalApiAuthorizer:
+            FunctionArn: !GetAtt ApiAuthorizerFunction.Arn
+            FunctionPayloadType: REQUEST
+            Identity:
+              Headers:
+                - x-internal-api-key
+              ReauthorizeEvery: 0
       BinaryMediaTypes:
         - "multipart/form-data"
         - "application/pdf"

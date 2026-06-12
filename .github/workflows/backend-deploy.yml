@@ -61,4 +61,5 @@ jobs:
         run: |
           sam deploy \
             --no-fail-on-empty-changeset \
-            --no-confirm-changeset
+            --no-confirm-changeset \
+            --parameter-overrides Environment="dev" AllowedOrigins="*" InternalApiKey="${{ secrets.INTERNAL_API_KEY }}"

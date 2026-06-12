@@ -29,7 +29,7 @@ const appPlugin: FastifyPluginAsync<AppOptions> = async (
       "https://roselle.dev",
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Api-Key"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Api-Key", "x-internal-api-key", "X-Internal-Api-Key"],
   });
 
   void fastify.register(AutoLoad, {
