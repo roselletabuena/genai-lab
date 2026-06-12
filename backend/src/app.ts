@@ -24,6 +24,7 @@ const appPlugin: FastifyPluginAsync<AppOptions> = async (
       "https://ai-document-assistant-six.vercel.app",
       "http://localhost:5173",
       "http://localhost:3000",
+      "http://localhost:3001",
       "https://ai.roselle.dev",
       "https://roselle.dev",
     ],
