@@ -11,7 +11,7 @@ import {
 } from "@aws-sdk/client-bedrock-agent-runtime";
 
 const GUARDRAIL_ID = process.env.BEDROCK_GUARDRAIL_ID;
-const GUARDRAIL_VERSION = process.env.BEDROCK_GUARDRAIL_VERSION || "DRAFT";
+const GUARDRAIL_VERSION = "DRAFT";
 const KNOWLEDGE_BASE = process.env.KNOWLEDGE_BASE_ID;
 const REGION = process.env.AWS_REGION || "us-east-1";
 const MODEL_ID = "us.anthropic.claude-haiku-4-5-20251001-v1:0";
@@ -102,13 +102,18 @@ export async function chat(messages: ChatMessage[]): Promise<ChatResult> {
         guardrailConfig: {
           guardrailIdentifier: GUARDRAIL_ID,
           guardrailVersion: GUARDRAIL_VERSION,
-          trace: "disabled",
+          trace: "enabled",
         },
         toolConfig,
       }),
     );
 
     if (response.stopReason === "guardrail_intervened") {
+      console.log("Guardrail trace:", JSON.stringify(response.output?.message, null, 2));
+      const trace = (response as any).trace;
+      if (trace) {
+        console.log("Guardrail full trace:", JSON.stringify(trace, null, 2));
+      }
       return { answer: GUARDRAIL_FALLBACK };
     }
 
