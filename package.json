@@ -8,12 +8,15 @@
     "frontend"
   ],
   "scripts": {
-    "verify": "npm run format:check && npm run lint && npm run typecheck",
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run graph:verify",
     "format:check": "npm run format:check --workspaces --if-present",
     "format": "npm run format --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "build": "npm run build --workspaces --if-present"
+    "build": "npm run build --workspaces --if-present",
+    "graph:generate": "node scripts/generate-knowledge-graph.mjs",
+    "graph:query": "node scripts/query-knowledge-graph.mjs",
+    "graph:verify": "node scripts/verify-knowledge-graph.mjs"
   }
 }
