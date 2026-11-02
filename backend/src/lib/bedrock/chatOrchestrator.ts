@@ -5,6 +5,12 @@ import { bedrockClient, MODEL_ID, FAST_MODEL_ID, GUARDRAIL_ID, GUARDRAIL_VERSION
 import { retrieveKnowledgeBaseContext } from "./knowledgeBase";
 import { collectStreamTurn, StreamChunk, StreamTurnResult } from "./streamCollector";
 import { TOOL_CONFIG, resolveToolCalls } from "./toolHandler";
+import {
+  checkAndIncrementDailyChatCap,
+  DAILY_CAP_MESSAGE,
+} from "../../services/usageCounterService";
+
+export { DAILY_CAP_MESSAGE };
 
 const MAX_TURNS = 5;
 
@@ -51,6 +57,13 @@ export async function invokeSingleTurnPrompt(prompt: string): Promise<string> {
 }
 
 export async function* chatStream(messages: ChatMessage[]): AsyncGenerator<StreamChunk> {
+  const capCheck = await checkAndIncrementDailyChatCap();
+  if (!capCheck.allowed) {
+    yield { type: "token", text: DAILY_CAP_MESSAGE };
+    yield { type: "done" };
+    return;
+  }
+
   const lastUserMessage = messages.filter((m) => m.role === "user").at(-1)?.content ?? "";
   const bedrockMessages = toBedrockMessages(stripGuardrailTurns(messages));
   const context = await retrieveKnowledgeBaseContext(lastUserMessage);
@@ -64,7 +77,11 @@ export async function* chatStream(messages: ChatMessage[]): AsyncGenerator<Strea
         system,
         messages: bedrockMessages,
         inferenceConfig: { temperature: 0, maxTokens: 300 },
-        guardrailConfig: { guardrailIdentifier: GUARDRAIL_ID, guardrailVersion: GUARDRAIL_VERSION, trace: "enabled" },
+        guardrailConfig: {
+          guardrailIdentifier: GUARDRAIL_ID,
+          guardrailVersion: GUARDRAIL_VERSION,
+          trace: "enabled",
+        },
         toolConfig: TOOL_CONFIG,
       })
     );
@@ -106,6 +123,11 @@ export async function* chatStream(messages: ChatMessage[]): AsyncGenerator<Strea
 }
 
 export async function chat(messages: ChatMessage[]): Promise<ChatResult> {
+  const capCheck = await checkAndIncrementDailyChatCap();
+  if (!capCheck.allowed) {
+    return { answer: DAILY_CAP_MESSAGE };
+  }
+
   const lastUserMessage = messages.filter((m) => m.role === "user").at(-1)?.content ?? "";
   const bedrockMessages = toBedrockMessages(stripGuardrailTurns(messages));
   const context = await retrieveKnowledgeBaseContext(lastUserMessage);
@@ -119,7 +141,11 @@ export async function chat(messages: ChatMessage[]): Promise<ChatResult> {
         system,
         messages: bedrockMessages,
         inferenceConfig: { temperature: 0, maxTokens: 300 },
-        guardrailConfig: { guardrailIdentifier: GUARDRAIL_ID, guardrailVersion: GUARDRAIL_VERSION, trace: "enabled" },
+        guardrailConfig: {
+          guardrailIdentifier: GUARDRAIL_ID,
+          guardrailVersion: GUARDRAIL_VERSION,
+          trace: "enabled",
+        },
         toolConfig: TOOL_CONFIG,
       })
     );
