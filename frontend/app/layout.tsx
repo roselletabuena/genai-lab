@@ -14,7 +14,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "AI & Cloud Explorations | Technical Portfolio",
-  description: "A curated collection of technical explorations covering agentic workflows, RAG pipelines, cloud architectures, and structured LLM extraction.",
+  description:
+    "A curated collection of technical explorations covering agentic workflows, RAG pipelines, cloud architectures, and structured LLM extraction.",
 };
 
 export default function RootLayout({

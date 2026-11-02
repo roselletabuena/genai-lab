@@ -19,9 +19,10 @@ export const TOOL_CONFIG = {
  * Returns the Bedrock tool-result content and the calendar URL if the calendar
  * tool was invoked.
  */
-export function resolveToolCalls(
-  accumulatedContent: any[]
-): { toolResultsContent: any[]; calendarUrl: string | undefined } {
+export function resolveToolCalls(accumulatedContent: any[]): {
+  toolResultsContent: any[];
+  calendarUrl: string | undefined;
+} {
   let calendarUrl: string | undefined;
   const toolResultsContent: any[] = [];
 
@@ -32,7 +33,9 @@ export function resolveToolCalls(
 
     if (name === CALENDAR_TOOL_NAME) {
       calendarUrl = CALENDAR_URL;
-      resultData = { message: "A calendar widget is available for booking a meeting with Roselle." };
+      resultData = {
+        message: "A calendar widget is available for booking a meeting with Roselle.",
+      };
     }
 
     toolResultsContent.push({

@@ -72,8 +72,8 @@ const ALL_TAGS = ["All", "NLP", "RAG", "Vector DB", "Agents", "AWS"];
 
 const STATUS_STYLES: Record<string, string> = {
   "In Progress": "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
-  "Explored": "bg-emerald-500/5 text-emerald-600 dark:text-emerald-400/90 border-emerald-500/10",
-  "Deprecated": "bg-red-500/5 text-red-600 dark:text-red-400/90 border-red-500/10",
+  Explored: "bg-emerald-500/5 text-emerald-600 dark:text-emerald-400/90 border-emerald-500/10",
+  Deprecated: "bg-red-500/5 text-red-600 dark:text-red-400/90 border-red-500/10",
 };
 
 export default function SearchSection() {
@@ -140,7 +140,8 @@ export default function SearchSection() {
                   <Badge
                     variant="outline"
                     className={`text-[0.65rem] font-semibold tracking-wider uppercase ${
-                      STATUS_STYLES[project.status] || "bg-bg-secondary text-text-secondary border-border-color"
+                      STATUS_STYLES[project.status] ||
+                      "bg-bg-secondary text-text-secondary border-border-color"
                     }`}
                   >
                     {project.status === "In Progress" && (
