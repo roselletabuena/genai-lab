@@ -31,3 +31,4 @@ export const ddbDocClient = DynamoDBDocumentClient.from(ddbClient, {
 });
 
 export const PORTFOLIO_USERS_TABLE = process.env.PORTFOLIO_USERS_TABLE || "PortfolioUsers-dev";
+export const USAGE_COUNTERS_TABLE = process.env.USAGE_COUNTERS_TABLE || "UsageCounters-dev";
