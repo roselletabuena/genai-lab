@@ -4,6 +4,7 @@ import { ChatMessage } from "./types/portfolio";
 import { chatStream, GUARDRAIL_FALLBACK } from "./lib/bedrock";
 import { trackUserInteraction } from "./services/portfolioService";
 import { isAuthorized } from "./utils/auth";
+import { chatPayloadSchema, INVALID_PAYLOAD_ERROR } from "./schemas/chat.schema";
 
 /**
  * Standard handler — used by API Gateway for all existing routes.
@@ -13,6 +14,22 @@ export const handler = awsLambdaFastify(app, {
   callbackWaitsForEmptyEventLoop: false,
   serializeLambdaArguments: false,
 });
+
+function sendStreamError(responseStream: any, statusCode: number, error: string): void {
+  const metadata = {
+    statusCode,
+    headers: { "Content-Type": "application/json" },
+  };
+  const httpResponseStream =
+    typeof (awslambda as any)?.HttpResponseStream?.from === "function"
+      ? (awslambda as any).HttpResponseStream.from(responseStream, metadata)
+      : responseStream;
+  if (typeof httpResponseStream.setContentType === "function") {
+    httpResponseStream.setContentType("application/json");
+  }
+  httpResponseStream.write(JSON.stringify({ error }));
+  httpResponseStream.end();
+}
 
 /**
  * Streaming handler — used exclusively by the Lambda Function URL
@@ -36,33 +53,26 @@ export const streamHandler = (awslambda as any).streamifyResponse(
 
     // ── Internal API Key validation ──────────────────────────────────────────
     if (!isAuthorized(event.headers)) {
-      const metadata = {
-        statusCode: 401,
-        headers: { "Content-Type": "application/json" },
-      };
-      const httpResponseStream =
-        typeof (awslambda as any)?.HttpResponseStream?.from === "function"
-          ? (awslambda as any).HttpResponseStream.from(responseStream, metadata)
-          : responseStream;
-      if (typeof httpResponseStream.setContentType === "function") {
-        httpResponseStream.setContentType("application/json");
-      }
-      httpResponseStream.write(JSON.stringify({ error: "Unauthorized" }));
-      httpResponseStream.end();
+      sendStreamError(responseStream, 401, "Unauthorized");
       return;
     }
 
-    // ── Parse body ───────────────────────────────────────────────────────────
-    let messages: ChatMessage[] = [];
+    // ── Parse & validate body ────────────────────────────────────────────────
+    let parsedBody: unknown;
     try {
-      const body = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
-      messages = (body?.messages ?? []).slice(-CONVERSATION_LIMIT);
+      parsedBody = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
     } catch {
-      responseStream.setContentType("application/json");
-      responseStream.write(JSON.stringify({ error: "Invalid request body" }));
-      responseStream.end();
+      sendStreamError(responseStream, 400, INVALID_PAYLOAD_ERROR);
       return;
     }
+
+    const parseResult = chatPayloadSchema.safeParse(parsedBody);
+    if (!parseResult.success) {
+      sendStreamError(responseStream, 400, INVALID_PAYLOAD_ERROR);
+      return;
+    }
+
+    const messages: ChatMessage[] = parseResult.data.messages.slice(-CONVERSATION_LIMIT);
 
     // ── Visitor tracking (fire-and-forget) ────────────────────────────────────
     const visitorId = event.headers?.["x-visitor-id"];
