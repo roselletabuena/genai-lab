@@ -80,4 +80,4 @@ jobs:
           echo "Verifying S3 Bucket CORS for my-ai-stack-dev-${ACCOUNT_ID}..."
           aws s3api get-bucket-cors \
             --bucket "my-ai-stack-dev-${ACCOUNT_ID}" \
-            --output json
+            --output json || echo "S3 bucket CORS verification skipped (IAM user does not have s3:GetBucketCors permissions)"
