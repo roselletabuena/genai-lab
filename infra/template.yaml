@@ -56,7 +56,21 @@ Parameters:
     Default: 0
     Description: Reserved concurrent executions for DocumentsStreamFunction (0 disables reservation to preserve unreserved quota)
 
+  # ------------------------------------------
+  # AWS Budget & Billing Alerts (GL-26)
+  # ------------------------------------------
+  BudgetNotificationEmail:
+    Type: String
+    Default: "roselleroxtabuena@gmail.com"
+    Description: Notification email address for AWS budget alerts (leave empty to skip budget creation)
+
+  MonthlyBudgetLimit:
+    Type: Number
+    Default: 10
+    Description: Monthly AWS spend limit in USD for budget alert triggers
+
 Conditions:
+  HasBudgetEmail: !Not [!Equals [!Ref BudgetNotificationEmail, ""]]
   HasDocumentsReservedConcurrency: !Not [!Equals [!Ref DocumentsFunctionReservedConcurrency, 0]]
   HasDocumentsStreamReservedConcurrency: !Not [!Equals [!Ref DocumentsStreamFunctionReservedConcurrency, 0]]
 
@@ -518,6 +532,40 @@ Resources:
           FixedSizeChunkingConfiguration:
             MaxTokens: 400
             OverlapPercentage: 10
+
+  # ------------------------------------------
+  # AWS Budget (Cost Alert Ceiling - GL-26)
+  # ------------------------------------------
+  # Hard cost alert ceiling notifying the site owner at 80% actual spend and 100% forecasted monthly spend.
+  MonthlyCostBudget:
+    Type: AWS::Budgets::Budget
+    Condition: HasBudgetEmail
+    Properties:
+      Budget:
+        BudgetName: !Sub "my-ai-stack-monthly-budget-${Environment}"
+        BudgetType: COST
+        TimeUnit: MONTHLY
+        BudgetLimit:
+          Amount: !Ref MonthlyBudgetLimit
+          Unit: USD
+      NotificationsWithSubscribers:
+        - Notification:
+            NotificationType: ACTUAL
+            ComparisonOperator: GREATER_THAN
+            Threshold: 80
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - SubscriptionType: EMAIL
+              Address: !Ref BudgetNotificationEmail
+        - Notification:
+            NotificationType: FORECASTED
+            ComparisonOperator: GREATER_THAN
+            Threshold: 100
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - SubscriptionType: EMAIL
+              Address: !Ref BudgetNotificationEmail
+
 # ==========================================
 # OUTPUTS
 # ==========================================
