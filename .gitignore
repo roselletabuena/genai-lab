@@ -30,11 +30,15 @@ secrets/
 !.env.example
 
 ########################################
+# NODE MODULES
+########################################
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+
+########################################
 # FRONTEND (VITE + REACT + TS)
 ########################################
-# node modules
-frontend/node_modules/
-
 # build output
 frontend/dist/
 frontend/.vite/
