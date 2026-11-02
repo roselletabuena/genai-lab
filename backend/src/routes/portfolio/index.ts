@@ -14,6 +14,16 @@ import { z } from "zod";
 
 const CONVERSATION_LIMIT = 10;
 
+function isRateLimitedOrThrottled(err: any): boolean {
+  return (
+    err?.name === "ThrottlingException" ||
+    err?.name === "TooManyRequestsException" ||
+    err?.name === "ProvisionedThroughputExceededException" ||
+    err?.name === "RequestLimitExceeded" ||
+    err?.code === "ThrottlingException"
+  );
+}
+
 function trackVisitor(request: FastifyRequest): void {
   const visitorId = request.headers["x-visitor-id"];
   if (typeof visitorId === "string" && visitorId.trim() !== "") {
@@ -47,8 +57,14 @@ const portfolio: FastifyPluginAsync = async (fastify): Promise<void> => {
       try {
         const truncatedMessages = request.body.messages.slice(-CONVERSATION_LIMIT);
         return await chat(truncatedMessages);
-      } catch (err) {
+      } catch (err: any) {
         request.log.error(err);
+        if (isRateLimitedOrThrottled(err)) {
+          return reply.code(429).send({
+            error: "Bedrock rate limit exceeded",
+            details: err instanceof Error ? err.message : "Rate limit exceeded",
+          });
+        }
         return reply.code(500).send({
           error: "Failed to process portfolio question",
           details: err instanceof Error ? err.message : "Unknown error",
@@ -96,7 +112,7 @@ const portfolio: FastifyPluginAsync = async (fastify): Promise<void> => {
             writeChunk(chunk);
           }
         }
-      } catch (err) {
+      } catch (err: any) {
         request.log.error(err);
         writeChunk({
           type: "error",
@@ -135,12 +151,21 @@ const portfolio: FastifyPluginAsync = async (fastify): Promise<void> => {
       const prompt = buildSuggestedPrompt(conversation, lastMessage);
       if (prompt == null) return {};
 
-      const raw = await invokeSingleTurnPrompt(prompt);
-
       try {
+        const raw = await invokeSingleTurnPrompt(prompt);
         return reply.send(JSON.parse(raw));
-      } catch {
-        return reply.code(500).send({ error: "Invalid model response", raw });
+      } catch (err: any) {
+        request.log.error(err);
+        if (isRateLimitedOrThrottled(err)) {
+          return reply.code(429).send({
+            error: "Bedrock rate limit exceeded",
+            details: err instanceof Error ? err.message : "Rate limit exceeded",
+          });
+        }
+        return reply.code(500).send({
+          error: "Invalid model response",
+          details: err instanceof Error ? err.message : "Unknown error",
+        });
       }
     }
   );
