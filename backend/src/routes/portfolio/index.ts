@@ -19,6 +19,12 @@ function trackVisitor(request: FastifyRequest): void {
   if (typeof visitorId === "string" && visitorId.trim() !== "") {
     void trackUserInteraction(visitorId.trim());
   }
+
+  const rawClientIp = request.headers["x-client-ip"];
+  const clientIp = Array.isArray(rawClientIp) ? rawClientIp[0] : rawClientIp;
+  if (typeof clientIp === "string" && clientIp.trim() !== "") {
+    request.log.info({ clientIp: clientIp.trim() }, "Incoming chat request client IP");
+  }
 }
 
 const validatePayload = <T>(schema: z.ZodType<T>) => {
@@ -123,6 +129,7 @@ const portfolio: FastifyPluginAsync = async (fastify): Promise<void> => {
     "/suggested-prompts",
     { preValidation: validatePayload(suggestedPromptsPayloadSchema) },
     async (request, reply) => {
+      trackVisitor(request);
       const { conversation, lastMessage } = request.body;
 
       const prompt = buildSuggestedPrompt(conversation, lastMessage);

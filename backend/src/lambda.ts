@@ -3,7 +3,7 @@ import { app } from "./app";
 import { ChatMessage } from "./types/portfolio";
 import { chatStream, GUARDRAIL_FALLBACK } from "./lib/bedrock";
 import { trackUserInteraction } from "./services/portfolioService";
-import { isAuthorized } from "./utils/auth";
+import { isAuthorized, getHeaderValue } from "./utils/auth";
 import { chatPayloadSchema, INVALID_PAYLOAD_ERROR } from "./schemas/chat.schema";
 
 /**
@@ -78,6 +78,12 @@ export const streamHandler = (awslambda as any).streamifyResponse(
     const visitorId = event.headers?.["x-visitor-id"];
     if (typeof visitorId === "string" && visitorId.trim() !== "") {
       void trackUserInteraction(visitorId.trim());
+    }
+
+    // ── Client IP logging ────────────────────────────────────────────────────
+    const clientIp = getHeaderValue(event.headers, "x-client-ip");
+    if (clientIp && clientIp.trim() !== "") {
+      console.log(`[streamHandler] Client IP received: ${clientIp.trim()}`);
     }
 
     // ── SSE streaming ─────────────────────────────────────────────────────────
