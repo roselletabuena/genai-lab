@@ -98,3 +98,6 @@ infra/target/
 # logs
 logs/
 *.log
+
+# Git worktrees
+.worktrees/
