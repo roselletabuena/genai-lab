@@ -5,6 +5,7 @@ on:
       - main
     paths:
       - "backend/**"
+      - "packages/**"
       - "infra/**"
       - ".github/workflows/backend-deploy.yml"
   workflow_dispatch: # Manual Trigger option
@@ -27,11 +28,13 @@ jobs:
         with:
           node-version: "24"
           cache: "npm"
-          cache-dependency-path: backend/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        working-directory: ./backend
-        run: npm ci --no-workspaces
+        run: npm ci
+
+      - name: Build shared contracts
+        run: npm run build --workspace=@genai-lab/contracts
 
       - name: Build TypeScript
         working-directory: ./backend
@@ -43,6 +46,8 @@ jobs:
           cp package.json dist/
           cp package-lock.json dist/
           cd dist && npm ci --omit=dev --no-workspaces
+          mkdir -p node_modules/@genai-lab
+          cp -r ../../packages/contracts node_modules/@genai-lab/contracts
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
@@ -80,4 +85,4 @@ jobs:
           echo "Verifying S3 Bucket CORS for my-ai-stack-dev-${ACCOUNT_ID}..."
           aws s3api get-bucket-cors \
             --bucket "my-ai-stack-dev-${ACCOUNT_ID}" \
-            --output json || echo "S3 bucket CORS verification skipped (IAM user does not have s3:GetBucketCors permissions)"
+            --output json

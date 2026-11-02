@@ -9,7 +9,11 @@ import {
   ChatPayload,
   SuggestedPromptsPayload,
   INVALID_PAYLOAD_ERROR,
-} from "../../schemas/chat.schema";
+  formatZodError,
+  normalizeChatPayload,
+  VISITOR_ID_HEADER,
+  CLIENT_IP_HEADER,
+} from "@genai-lab/contracts";
 import { z } from "zod";
 
 const CONVERSATION_LIMIT = 10;
@@ -24,13 +28,16 @@ function isRateLimitedOrThrottled(err: any): boolean {
   );
 }
 
-function trackVisitor(request: FastifyRequest): void {
-  const visitorId = request.headers["x-visitor-id"];
+function trackVisitor(request: FastifyRequest, payloadVisitorId?: string): void {
+  const visitorId =
+    payloadVisitorId && payloadVisitorId.trim() !== ""
+      ? payloadVisitorId.trim()
+      : request.headers[VISITOR_ID_HEADER];
   if (typeof visitorId === "string" && visitorId.trim() !== "") {
     void trackUserInteraction(visitorId.trim());
   }
 
-  const rawClientIp = request.headers["x-client-ip"];
+  const rawClientIp = request.headers[CLIENT_IP_HEADER];
   const clientIp = Array.isArray(rawClientIp) ? rawClientIp[0] : rawClientIp;
   if (typeof clientIp === "string" && clientIp.trim() !== "") {
     request.log.info({ clientIp: clientIp.trim() }, "Incoming chat request client IP");
@@ -41,7 +48,10 @@ const validatePayload = <T>(schema: z.ZodType<T>) => {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     const result = schema.safeParse(request.body);
     if (!result.success) {
-      return reply.code(400).send({ error: INVALID_PAYLOAD_ERROR });
+      return reply.code(400).send({
+        error: INVALID_PAYLOAD_ERROR,
+        details: formatZodError(result.error),
+      });
     }
     request.body = result.data;
   };
@@ -52,10 +62,11 @@ const portfolio: FastifyPluginAsync = async (fastify): Promise<void> => {
     "/chat",
     { preValidation: validatePayload(chatPayloadSchema) },
     async (request, reply) => {
-      trackVisitor(request);
+      const normalized = normalizeChatPayload(request.body);
+      trackVisitor(request, normalized.visitorId);
 
       try {
-        const truncatedMessages = request.body.messages.slice(-CONVERSATION_LIMIT);
+        const truncatedMessages = normalized.messages.slice(-CONVERSATION_LIMIT);
         return await chat(truncatedMessages);
       } catch (err: any) {
         request.log.error(err);
@@ -89,7 +100,8 @@ const portfolio: FastifyPluginAsync = async (fastify): Promise<void> => {
     "/chat/stream",
     { preValidation: validatePayload(chatPayloadSchema) },
     async (request, reply) => {
-      trackVisitor(request);
+      const normalized = normalizeChatPayload(request.body);
+      trackVisitor(request, normalized.visitorId);
 
       reply.raw.setHeader("Content-Type", "text/event-stream; charset=utf-8");
       reply.raw.setHeader("Cache-Control", "no-cache");
@@ -102,7 +114,7 @@ const portfolio: FastifyPluginAsync = async (fastify): Promise<void> => {
       };
 
       try {
-        const truncatedMessages = request.body.messages.slice(-CONVERSATION_LIMIT);
+        const truncatedMessages = normalized.messages.slice(-CONVERSATION_LIMIT);
         const stream = chatStream(truncatedMessages);
 
         for await (const chunk of stream) {
