@@ -1,10 +1,7 @@
 import crypto from "crypto";
 
 export type HeadersInput =
-  | Record<string, string | string[] | undefined>
-  | NodeJS.Dict<string | string[]>
-  | null
-  | undefined;
+  Record<string, string | string[] | undefined> | NodeJS.Dict<string | string[]> | null | undefined;
 
 /**
  * Case-insensitive lookup for a header value from various header input shapes.

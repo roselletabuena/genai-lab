@@ -4,7 +4,14 @@ import { ChatMessage } from "./types/portfolio";
 import { chatStream, GUARDRAIL_FALLBACK } from "./lib/bedrock";
 import { trackUserInteraction } from "./services/portfolioService";
 import { isAuthorized, getHeaderValue } from "./utils/auth";
-import { chatPayloadSchema, INVALID_PAYLOAD_ERROR } from "./schemas/chat.schema";
+import {
+  chatPayloadSchema,
+  INVALID_PAYLOAD_ERROR,
+  formatZodError,
+  normalizeChatPayload,
+  VISITOR_ID_HEADER,
+  CLIENT_IP_HEADER,
+} from "@genai-lab/contracts";
 
 /**
  * Standard handler — used by API Gateway for all existing routes.
@@ -15,7 +22,12 @@ export const handler = awsLambdaFastify(app, {
   serializeLambdaArguments: false,
 });
 
-function sendStreamError(responseStream: any, statusCode: number, error: string): void {
+function sendStreamError(
+  responseStream: any,
+  statusCode: number,
+  error: string,
+  details?: any
+): void {
   const metadata = {
     statusCode,
     headers: { "Content-Type": "application/json" },
@@ -27,7 +39,8 @@ function sendStreamError(responseStream: any, statusCode: number, error: string)
   if (typeof httpResponseStream.setContentType === "function") {
     httpResponseStream.setContentType("application/json");
   }
-  httpResponseStream.write(JSON.stringify({ error }));
+  const body = details ? { error, details } : { error };
+  httpResponseStream.write(JSON.stringify(body));
   httpResponseStream.end();
 }
 
@@ -68,20 +81,26 @@ export const streamHandler = (awslambda as any).streamifyResponse(
 
     const parseResult = chatPayloadSchema.safeParse(parsedBody);
     if (!parseResult.success) {
-      sendStreamError(responseStream, 400, INVALID_PAYLOAD_ERROR);
+      sendStreamError(
+        responseStream,
+        400,
+        INVALID_PAYLOAD_ERROR,
+        formatZodError(parseResult.error)
+      );
       return;
     }
 
-    const messages: ChatMessage[] = parseResult.data.messages.slice(-CONVERSATION_LIMIT);
+    const normalized = normalizeChatPayload(parseResult.data);
+    const messages: ChatMessage[] = normalized.messages.slice(-CONVERSATION_LIMIT);
 
     // ── Visitor tracking (fire-and-forget) ────────────────────────────────────
-    const visitorId = event.headers?.["x-visitor-id"];
+    const visitorId = normalized.visitorId ?? event.headers?.[VISITOR_ID_HEADER];
     if (typeof visitorId === "string" && visitorId.trim() !== "") {
       void trackUserInteraction(visitorId.trim());
     }
 
     // ── Client IP logging ────────────────────────────────────────────────────
-    const clientIp = getHeaderValue(event.headers, "x-client-ip");
+    const clientIp = getHeaderValue(event.headers, CLIENT_IP_HEADER);
     if (clientIp && clientIp.trim() !== "") {
       console.log(`[streamHandler] Client IP received: ${clientIp.trim()}`);
     }
