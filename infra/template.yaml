@@ -61,7 +61,7 @@ Parameters:
   # ------------------------------------------
   BudgetNotificationEmail:
     Type: String
-    Default: "roselleroxtabuena@gmail.com"
+    Default: ""
     Description: Notification email address for AWS budget alerts (leave empty to skip budget creation)
 
   MonthlyBudgetLimit:
