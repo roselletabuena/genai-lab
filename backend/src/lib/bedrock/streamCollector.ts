@@ -3,7 +3,7 @@ import { ChatResult } from "./chatOrchestrator";
 // Discriminated union of SSE events yielded by chatStream()
 export type StreamChunk =
   | { type: "token"; text: string }
-  | { type: "guardrail" }                      // client should discard buffered tokens and show fallback
+  | { type: "guardrail" } // client should discard buffered tokens and show fallback
   | { type: "done"; uiWidget?: ChatResult["uiWidget"] }
   | { type: "error"; message: string };
 
