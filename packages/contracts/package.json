@@ -1,0 +1,27 @@
+{
+  "name": "@genai-lab/contracts",
+  "version": "1.0.0",
+  "description": "Shared type-safe API schema contracts between backend and frontend",
+  "main": "dist/index.js",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "prettier": "^3.8.4",
+    "typescript": "^5.0.0"
+  }
+}
