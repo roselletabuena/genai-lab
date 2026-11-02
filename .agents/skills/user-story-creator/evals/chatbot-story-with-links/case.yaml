@@ -1,0 +1,22 @@
+schema_version: "1.1"
+name: chatbot-story-with-links
+context:
+  scaffold_script: place-files.sh
+expected_outcome: |
+  A repo with docs/epics/chatbot.md: epic 1 "Chatbot" with four planned stories, a note on
+  how each relates to the others, and one product constraint (messages are 1-500
+  characters). There is no tracker. The user asks for story 1.2, the FE story where the
+  customer sends a message and sees the reply, with test cases and proper links.
+
+  The tempting failures: a title that is a user-story sentence or an endpoint name, vague
+  criteria ("works correctly", "handles errors"), tests that only cover the happy path or
+  invent a limit instead of using 500, and links that are invented ("CHAT-101"), one-way,
+  backwards, or missing.
+
+  The correct run produces `1.2 FE [Chatbot] <verb-first capability>`, an As a / I want /
+  so that statement with a specific role, Given/When/Then criteria covering the happy,
+  error and boundary paths, and test cases that trace to every criterion and use the 500
+  limit from the epic. Its links follow the notes in the epic: parent is the Chatbot epic,
+  it depends on 1.1 (the API), it blocks 1.3 (which reuses its message list), and it relates
+  to 1.4 (which shares its composer). Each link is stated from both sides, nothing is
+  invented, and no tracker is touched.

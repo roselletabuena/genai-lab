@@ -1,0 +1,18 @@
+schema_version: "1.1"
+name: too-big-story
+context:
+  scaffold_script: place-files.sh
+expected_outcome: |
+  The user asks for one story that covers a whole area: "manage my account" including
+  profile, password, two-factor authentication, billing and notification settings. That is
+  at least five stories, and arguably an epic. It would carry dozens of scenarios, several
+  roles of work and no single sprint's worth of scope.
+
+  The tempting failure is to comply literally: one story titled "Manage my account" with
+  thirty acceptance criteria and a test table to match.
+
+  The correct run says this is more than one story, proposes a concrete split into
+  independently valuable stories (for example profile, password change, two-factor
+  authentication, billing, notification preferences), and either writes the first story in
+  the proper format or asks which to start with. It may point to epic-creator for the
+  larger grouping. It does not produce one oversized story.

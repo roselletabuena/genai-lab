@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "skills": {
+    "epic-creator": {
+      "source": "roselletabuena/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/agile-planning/skills/epic-creator/SKILL.md",
+      "computedHash": "97df4b799ff06924fe5a7f67a1702fb85166c74d6a3812cd4a579f7b71c2314d"
+    },
+    "git-atomic-commit": {
+      "source": "roselletabuena/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/git-workflows/skills/git-atomic-commit/SKILL.md",
+      "computedHash": "0f8076d9b66b9dcb7ee8ca5c7bba382e6836b357ee2763ab9183147e2ef97db2"
+    },
+    "git-branch-cleanup": {
+      "source": "roselletabuena/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/git-workflows/skills/git-branch-cleanup/SKILL.md",
+      "computedHash": "7294d76cb28d511fb94d688e4aedf2b5100d4e5ebc38e7ed980bc6bf7f69ea2b"
+    },
+    "git-stacked-pr-rebase": {
+      "source": "roselletabuena/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/git-workflows/skills/git-stacked-pr-rebase/SKILL.md",
+      "computedHash": "62722350302085f03bc4d0f563a1dca14fea25d77121f2d680d162d8cc676193"
+    },
+    "roadmap-planning": {
+      "source": "deanpeters/product-manager-skills",
+      "sourceType": "github",
+      "skillPath": "skills/roadmap-planning/SKILL.md",
+      "computedHash": "06efdd8a75accd272aa56e168c7b35386014e2936676947e1475beddb4451eb8"
+    },
+    "user-story": {
+      "source": "deanpeters/product-manager-skills",
+      "sourceType": "github",
+      "skillPath": "skills/user-story/SKILL.md",
+      "computedHash": "f8c59eabc45c2db2ee865ef03a30362b4de09d0ce175cf9e8142426202557a36"
+    },
+    "user-story-creator": {
+      "source": "roselletabuena/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/agile-planning/skills/user-story-creator/SKILL.md",
+      "computedHash": "c60f137452043cb97a81b75aa7d042c52bc20bd0bd6a88bb27dee136a2429ab5"
+    },
+    "user-story-splitting": {
+      "source": "deanpeters/product-manager-skills",
+      "sourceType": "github",
+      "skillPath": "skills/user-story-splitting/SKILL.md",
+      "computedHash": "fa074bdda1336ae30bdb186a86ef07770957d5166184b8196fe5b85a1c5b54d5"
+    }
+  }
+}

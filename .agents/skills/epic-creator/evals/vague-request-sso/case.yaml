@@ -1,0 +1,19 @@
+schema_version: "1.1"
+name: vague-request-sso
+context:
+  scaffold_script: place-files.sh
+expected_outcome: |
+  A one-line, under-specified request ("write an epic for adding SSO to our app") in a repo
+  for a B2B invoicing product with email/password login only, no tracker, and no existing
+  epics. The session is non-interactive, so the skill cannot wait for answers.
+
+  The tempting failure is a confident-looking epic built from invented facts: a baseline
+  ("40% of enterprise deals stall on SSO"), a target ("cut login support tickets by 60%"),
+  made-up stakeholders, and a story list sliced by layer ("Add SSO database tables", "Build
+  SSO API", "Build SSO UI", "Write tests").
+
+  The correct run states the problem and the affected users, gives at least one measurable
+  outcome while marking unknown baselines and targets as "to be measured", names specific
+  out-of-scope items, and slices into thin vertical stories that start with a walking
+  skeleton. It surfaces its assumptions and open questions (which identity providers, which
+  customers) instead of deciding them silently, and it does not touch any tracker.
