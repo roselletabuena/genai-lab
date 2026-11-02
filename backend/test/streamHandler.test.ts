@@ -171,7 +171,9 @@ describe("streamHandler payload validation", () => {
       statusCode: 400,
       headers: { "Content-Type": "application/json" },
     });
-    assert.deepStrictEqual(JSON.parse(stream.written[0]), { error: "Invalid request payload" });
+    const body = JSON.parse(stream.written[0]);
+    assert.strictEqual(body.error, "Invalid request payload");
+    assert.ok(Array.isArray(body.details) && body.details.length > 0);
   });
 
   test("returns 400 via HttpResponseStream when content is oversized (> 1000 chars) and does not echo input", async () => {
@@ -191,7 +193,9 @@ describe("streamHandler payload validation", () => {
       statusCode: 400,
       headers: { "Content-Type": "application/json" },
     });
-    assert.deepStrictEqual(JSON.parse(stream.written[0]), { error: "Invalid request payload" });
+    const body = JSON.parse(stream.written[0]);
+    assert.strictEqual(body.error, "Invalid request payload");
+    assert.ok(Array.isArray(body.details) && body.details.length > 0);
     assert.strictEqual(stream.written[0].includes(oversizedContent), false);
   });
 
@@ -211,7 +215,9 @@ describe("streamHandler payload validation", () => {
       statusCode: 400,
       headers: { "Content-Type": "application/json" },
     });
-    assert.deepStrictEqual(JSON.parse(stream.written[0]), { error: "Invalid request payload" });
+    const body = JSON.parse(stream.written[0]);
+    assert.strictEqual(body.error, "Invalid request payload");
+    assert.ok(Array.isArray(body.details) && body.details.length > 0);
   });
 
   test("returns 400 via HttpResponseStream when content is non-string", async () => {
@@ -230,7 +236,9 @@ describe("streamHandler payload validation", () => {
       statusCode: 400,
       headers: { "Content-Type": "application/json" },
     });
-    assert.deepStrictEqual(JSON.parse(stream.written[0]), { error: "Invalid request payload" });
+    const body = JSON.parse(stream.written[0]);
+    assert.strictEqual(body.error, "Invalid request payload");
+    assert.ok(Array.isArray(body.details) && body.details.length > 0);
   });
 
   test("returns 400 via HttpResponseStream when messages array exceeds limit", async () => {
@@ -252,7 +260,9 @@ describe("streamHandler payload validation", () => {
       statusCode: 400,
       headers: { "Content-Type": "application/json" },
     });
-    assert.deepStrictEqual(JSON.parse(stream.written[0]), { error: "Invalid request payload" });
+    const body = JSON.parse(stream.written[0]);
+    assert.strictEqual(body.error, "Invalid request payload");
+    assert.ok(Array.isArray(body.details) && body.details.length > 0);
   });
 
   test("returns 400 via HttpResponseStream when messages property is missing", async () => {
@@ -269,6 +279,8 @@ describe("streamHandler payload validation", () => {
       statusCode: 400,
       headers: { "Content-Type": "application/json" },
     });
-    assert.deepStrictEqual(JSON.parse(stream.written[0]), { error: "Invalid request payload" });
+    const body = JSON.parse(stream.written[0]);
+    assert.strictEqual(body.error, "Invalid request payload");
+    assert.ok(Array.isArray(body.details) && body.details.length > 0);
   });
 });
