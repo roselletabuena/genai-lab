@@ -21,6 +21,11 @@ Parameters:
     Default: "https://roselle.dev"
     Description: CORS allowed origins (comma-separated for multiple origins)
 
+  DocumentsBucketAllowedOrigins:
+    Type: String
+    Default: "*"
+    Description: Allowed origins for Documents S3 Bucket CORS (defaults to wildcard to preserve existing S3 CORS without requiring s3:PutBucketCORS)
+
   # ------------------------------------------
   # Throttling & Burst Settings (GL-24)
   # ------------------------------------------
@@ -165,7 +170,7 @@ Resources:
             NoncurrentVersionExpirationInDays: 30
       CorsConfiguration:
         CorsRules:
-          - AllowedOrigins: !Split [",", !Ref AllowedOrigins]
+          - AllowedOrigins: !Split [",", !Ref DocumentsBucketAllowedOrigins]
             AllowedMethods:
               - GET
               - PUT
