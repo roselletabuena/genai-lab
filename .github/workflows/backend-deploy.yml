@@ -5,7 +5,7 @@ on:
       - main
     paths:
       - "backend/**"
-      - "infrastructure/**"
+      - "infra/**"
       - ".github/workflows/backend-deploy.yml"
   workflow_dispatch: # Manual Trigger option
 
@@ -53,11 +53,11 @@ jobs:
           use-installer: true
 
       - name: SAM Build
-        working-directory: ./infrastructure
+        working-directory: ./infra
         run: sam build --use-container
 
       - name: SAM Deploy
-        working-directory: ./infrastructure
+        working-directory: ./infra
         run: |
           sam deploy \
             --no-fail-on-empty-changeset \
