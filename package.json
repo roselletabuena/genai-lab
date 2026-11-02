@@ -1,0 +1,19 @@
+{
+  "name": "genai-lab",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-native repository for GenAI exploration with Fastify backend and Next.js frontend",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "verify": "npm run format:check && npm run lint && npm run typecheck",
+    "format:check": "npm run format:check --workspaces --if-present",
+    "format": "npm run format --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present"
+  }
+}
