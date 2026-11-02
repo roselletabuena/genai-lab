@@ -1,35 +1,18 @@
-import { FastifyPluginAsync, FastifyRequest } from "fastify";
+import { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
 import { chat, chatStream, invokeSingleTurnPrompt, GUARDRAIL_FALLBACK } from "../../lib/bedrock";
 import { buildSuggestedPrompt } from "../../prompts/portfolio.prompt";
 import { trackUserInteraction, getPortfolioStats } from "../../services/portfolioService";
-import { ChatMessage } from "../../types/portfolio";
 import { isAuthorized } from "../../utils/auth";
+import {
+  chatPayloadSchema,
+  suggestedPromptsPayloadSchema,
+  ChatPayload,
+  SuggestedPromptsPayload,
+  INVALID_PAYLOAD_ERROR,
+} from "../../schemas/chat.schema";
+import { z } from "zod";
 
 const CONVERSATION_LIMIT = 10;
-
-interface ChatBody {
-  messages: ChatMessage[];
-}
-
-const chatSchema = {
-  body: {
-    type: "object",
-    required: ["messages"],
-    properties: {
-      messages: {
-        type: "array",
-        items: {
-          type: "object",
-          required: ["role", "content"],
-          properties: {
-            role: { type: "string", enum: ["user", "assistant"] },
-            content: { type: "string", minLength: 1 },
-          },
-        },
-      },
-    },
-  },
-};
 
 function trackVisitor(request: FastifyRequest): void {
   const visitorId = request.headers["x-visitor-id"];
@@ -38,21 +21,35 @@ function trackVisitor(request: FastifyRequest): void {
   }
 }
 
-const portfolio: FastifyPluginAsync = async (fastify): Promise<void> => {
-  fastify.post<{ Body: ChatBody }>("/chat", { schema: chatSchema }, async (request, reply) => {
-    trackVisitor(request);
-
-    try {
-      const truncatedMessages = request.body.messages.slice(-CONVERSATION_LIMIT);
-      return await chat(truncatedMessages);
-    } catch (err) {
-      request.log.error(err);
-      return reply.code(500).send({
-        error: "Failed to process portfolio question",
-        details: err instanceof Error ? err.message : "Unknown error",
-      });
+const validatePayload = <T>(schema: z.ZodType<T>) => {
+  return async (request: FastifyRequest, reply: FastifyReply) => {
+    const result = schema.safeParse(request.body);
+    if (!result.success) {
+      return reply.code(400).send({ error: INVALID_PAYLOAD_ERROR });
     }
-  });
+    request.body = result.data;
+  };
+};
+
+const portfolio: FastifyPluginAsync = async (fastify): Promise<void> => {
+  fastify.post<{ Body: ChatPayload }>(
+    "/chat",
+    { preValidation: validatePayload(chatPayloadSchema) },
+    async (request, reply) => {
+      trackVisitor(request);
+
+      try {
+        const truncatedMessages = request.body.messages.slice(-CONVERSATION_LIMIT);
+        return await chat(truncatedMessages);
+      } catch (err) {
+        request.log.error(err);
+        return reply.code(500).send({
+          error: "Failed to process portfolio question",
+          details: err instanceof Error ? err.message : "Unknown error",
+        });
+      }
+    }
+  );
 
   /**
    * POST /portfolio/chat/stream
@@ -66,9 +63,9 @@ const portfolio: FastifyPluginAsync = async (fastify): Promise<void> => {
    *
    * GUARDRAIL_FALLBACK text: see lib/bedrock/chatOrchestrator.ts
    */
-  fastify.post<{ Body: ChatBody }>(
+  fastify.post<{ Body: ChatPayload }>(
     "/chat/stream",
-    { schema: chatSchema },
+    { preValidation: validatePayload(chatPayloadSchema) },
     async (request, reply) => {
       trackVisitor(request);
 
@@ -122,22 +119,24 @@ const portfolio: FastifyPluginAsync = async (fastify): Promise<void> => {
     }
   });
 
-  fastify.post<{
-    Body: { conversation: ChatMessage[]; lastMessage: string };
-  }>("/suggested-prompts", {}, async (request, reply) => {
-    const { conversation, lastMessage } = request.body;
+  fastify.post<{ Body: SuggestedPromptsPayload }>(
+    "/suggested-prompts",
+    { preValidation: validatePayload(suggestedPromptsPayloadSchema) },
+    async (request, reply) => {
+      const { conversation, lastMessage } = request.body;
 
-    const prompt = buildSuggestedPrompt(conversation, lastMessage);
-    if (prompt == null) return {};
+      const prompt = buildSuggestedPrompt(conversation, lastMessage);
+      if (prompt == null) return {};
 
-    const raw = await invokeSingleTurnPrompt(prompt);
+      const raw = await invokeSingleTurnPrompt(prompt);
 
-    try {
-      return reply.send(JSON.parse(raw));
-    } catch {
-      return reply.code(500).send({ error: "Invalid model response", raw });
+      try {
+        return reply.send(JSON.parse(raw));
+      } catch {
+        return reply.code(500).send({ error: "Invalid model response", raw });
+      }
     }
-  });
+  );
 };
 
 export default portfolio;
