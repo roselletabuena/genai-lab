@@ -37,6 +37,8 @@ const appPlugin: FastifyPluginAsync<AppOptions> = async (fastify, opts): Promise
       "x-internal-api-key",
       "X-Internal-Api-Key",
       "x-visitor-id",
+      "x-client-ip",
+      "X-Client-Ip",
     ],
   });
 

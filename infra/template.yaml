@@ -355,6 +355,7 @@ Resources:
             - content-type
             - x-visitor-id
             - x-internal-api-key
+            - x-client-ip
           MaxAge: 3600
       Tags:
         Environment: !Ref Environment
