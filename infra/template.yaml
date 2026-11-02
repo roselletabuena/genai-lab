@@ -34,6 +34,32 @@ Parameters:
     Default: 20
     Description: API Gateway burst request rate limit (concurrent burst ceiling across stage)
 
+  # ------------------------------------------
+  # Lambda Concurrency Settings (GL-23 / GL-25)
+  # ------------------------------------------
+  # NOTE ON LAMBDA CONCURRENCY QUOTA:
+  # AWS accounts require a minimum unreserved concurrency pool of 10 executions.
+  # If a new or low-quota AWS account has total concurrency quota equal to or close to 10,
+  # attempting to reserve concurrency via ReservedConcurrentExecutions will fail with:
+  # "Specified ReservedConcurrentExecutions for function decreases account's
+  #  UnreservedConcurrentExecution below its minimum value of [10]".
+  # To guarantee deployment safety across all account tiers, these parameters default to 0,
+  # which evaluates to AWS::NoValue (omitting the property). Set to > 0 (e.g. 5) once the
+  # account's concurrency quota has been verified via `aws lambda get-account-settings`.
+  DocumentsFunctionReservedConcurrency:
+    Type: Number
+    Default: 0
+    Description: Reserved concurrent executions for DocumentsFunction (0 disables reservation to preserve unreserved quota)
+
+  DocumentsStreamFunctionReservedConcurrency:
+    Type: Number
+    Default: 0
+    Description: Reserved concurrent executions for DocumentsStreamFunction (0 disables reservation to preserve unreserved quota)
+
+Conditions:
+  HasDocumentsReservedConcurrency: !Not [!Equals [!Ref DocumentsFunctionReservedConcurrency, 0]]
+  HasDocumentsStreamReservedConcurrency: !Not [!Equals [!Ref DocumentsStreamFunctionReservedConcurrency, 0]]
+
 
 Resources:
   # ------------------------------------------
@@ -182,6 +208,9 @@ Resources:
       CodeUri: ../backend/dist/
       MemorySize: 512
       Timeout: 30
+      # Reserved concurrency ceiling to prevent runaway concurrent execution costs (GL-25).
+      # Evaluates to AWS::NoValue when 0 to avoid deployment failure on accounts with low unreserved quota (GL-23).
+      ReservedConcurrentExecutions: !If [HasDocumentsReservedConcurrency, !Ref DocumentsFunctionReservedConcurrency, !Ref "AWS::NoValue"]
       Role: !GetAtt AppRole.Arn
       Environment:
         Variables:
@@ -249,6 +278,9 @@ Resources:
       CodeUri: ../backend/dist/
       MemorySize: 512
       Timeout: 60
+      # Reserved concurrency ceiling to prevent runaway concurrent execution costs (GL-25).
+      # Evaluates to AWS::NoValue when 0 to avoid deployment failure on accounts with low unreserved quota (GL-23).
+      ReservedConcurrentExecutions: !If [HasDocumentsStreamReservedConcurrency, !Ref DocumentsStreamFunctionReservedConcurrency, !Ref "AWS::NoValue"]
       Role: !GetAtt AppRole.Arn
       Environment:
         Variables:
