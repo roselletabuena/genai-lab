@@ -77,7 +77,16 @@ Parameters:
     Default: 100
     Description: Maximum global daily chat requests permitted across all visitors before returning a friendly cap message
 
+  EnableUsageCounters:
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
+    Description: Enable UsageCounters DynamoDB table (set to true once deployment IAM user has dynamodb permissions for UsageCounters)
+
 Conditions:
+  HasUsageCounters: !Equals [!Ref EnableUsageCounters, "true"]
   HasBudgetEmail: !Not [!Equals [!Ref BudgetNotificationEmail, ""]]
   HasDocumentsReservedConcurrency: !Not [!Equals [!Ref DocumentsFunctionReservedConcurrency, 0]]
   HasDocumentsStreamReservedConcurrency: !Not [!Equals [!Ref DocumentsStreamFunctionReservedConcurrency, 0]]
@@ -225,6 +234,7 @@ Resources:
   # Atomically updated via conditional writes before any Bedrock calls.
   UsageCountersTable:
     Type: AWS::DynamoDB::Table
+    Condition: HasUsageCounters
     Properties:
       TableName: !Sub "UsageCounters-${Environment}"
       BillingMode: PAY_PER_REQUEST
@@ -268,7 +278,7 @@ Resources:
           BEDROCK_GUARDRAIL_ID: !GetAtt PortfolioGuardrail.GuardrailId
           KNOWLEDGE_BASE_ID: !Ref PortfolioKnowledgeBase
           INTERNAL_API_KEY: !Ref InternalApiKey
-          USAGE_COUNTERS_TABLE: !Ref UsageCountersTable
+          USAGE_COUNTERS_TABLE: !If [HasUsageCounters, !Ref UsageCountersTable, !Sub "UsageCounters-${Environment}"]
           DAILY_CHAT_REQUEST_CAP: !Ref DailyChatRequestCap
           ALLOWED_ORIGINS: !Ref AllowedOrigins
       Events:
@@ -341,7 +351,7 @@ Resources:
           BEDROCK_GUARDRAIL_ID: !GetAtt PortfolioGuardrail.GuardrailId
           KNOWLEDGE_BASE_ID: !Ref PortfolioKnowledgeBase
           INTERNAL_API_KEY: !Ref InternalApiKey
-          USAGE_COUNTERS_TABLE: !Ref UsageCountersTable
+          USAGE_COUNTERS_TABLE: !If [HasUsageCounters, !Ref UsageCountersTable, !Sub "UsageCounters-${Environment}"]
           DAILY_CHAT_REQUEST_CAP: !Ref DailyChatRequestCap
           ALLOWED_ORIGINS: !Ref AllowedOrigins
       FunctionUrlConfig:
@@ -405,7 +415,7 @@ Resources:
                   - !Sub "${DocumentsTable.Arn}/index/*"
                   - !GetAtt PortfolioUsersTable.Arn
                   - !Sub "${PortfolioUsersTable.Arn}/index/*"
-                  - !GetAtt UsageCountersTable.Arn
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/UsageCounters-${Environment}"
                   - !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:knowledge-base/*"
               - Effect: Allow
                 Action:
@@ -643,4 +653,4 @@ Outputs:
 
   UsageCountersTableName:
     Description: "DynamoDB table for usage counters and daily chat request caps"
-    Value: !Ref UsageCountersTable
+    Value: !If [HasUsageCounters, !Ref UsageCountersTable, !Sub "UsageCounters-${Environment}"]
