@@ -72,10 +72,10 @@ backend/.pytest_cache/
 backend/.coverage
 
 # SAM build
-infrastructure/.aws-sam/
-infrastructure/build/
-infrastructure/dist/
-infrastructure/target/
+infra/.aws-sam/
+infra/build/
+infra/dist/
+infra/target/
 
 
 ########################################
