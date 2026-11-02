@@ -13,17 +13,22 @@ const options: AppOptions = {
   },
 };
 
+const defaultAllowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "https://ai.roselle.dev",
+  "https://roselle.dev",
+];
+
 const appPlugin: FastifyPluginAsync<AppOptions> = async (fastify, opts): Promise<void> => {
+  const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
+    : defaultAllowedOrigins;
+
   await fastify.register(multipart);
   await fastify.register(cors, {
-    origin: [
-      "https://ai-document-assistant-six.vercel.app",
-      "http://localhost:5173",
-      "http://localhost:3000",
-      "http://localhost:3001",
-      "https://ai.roselle.dev",
-      "https://roselle.dev",
-    ],
+    origin: allowedOrigins,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: [
       "Content-Type",
