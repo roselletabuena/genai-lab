@@ -3,6 +3,7 @@ import { app } from "./app";
 import { ChatMessage } from "./types/portfolio";
 import { chatStream, GUARDRAIL_FALLBACK } from "./lib/bedrock";
 import { trackUserInteraction } from "./services/portfolioService";
+import { isAuthorized } from "./utils/auth";
 
 /**
  * Standard handler — used by API Gateway for all existing routes.
@@ -34,11 +35,20 @@ export const streamHandler = (awslambda as any).streamifyResponse(
     }
 
     // ── Internal API Key validation ──────────────────────────────────────────
-    const receivedKey = event.headers?.["x-internal-api-key"] || event.headers?.["X-Internal-Api-Key"];
-    if (process.env.NODE_ENV === "production" && receivedKey !== process.env.INTERNAL_API_KEY) {
-      responseStream.setContentType("application/json");
-      responseStream.write(JSON.stringify({ error: "Unauthorized" }));
-      responseStream.end();
+    if (!isAuthorized(event.headers)) {
+      const metadata = {
+        statusCode: 401,
+        headers: { "Content-Type": "application/json" },
+      };
+      const httpResponseStream =
+        typeof (awslambda as any)?.HttpResponseStream?.from === "function"
+          ? (awslambda as any).HttpResponseStream.from(responseStream, metadata)
+          : responseStream;
+      if (typeof httpResponseStream.setContentType === "function") {
+        httpResponseStream.setContentType("application/json");
+      }
+      httpResponseStream.write(JSON.stringify({ error: "Unauthorized" }));
+      httpResponseStream.end();
       return;
     }
 
