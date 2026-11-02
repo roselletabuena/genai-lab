@@ -21,6 +21,19 @@ Parameters:
     Default: "https://ai-document-assistant-six.vercel.app,https://roselle.dev"
     Description: CORS allowed origins (comma-separated for multiple origins)
 
+  # ------------------------------------------
+  # Throttling & Burst Settings (GL-24)
+  # ------------------------------------------
+  ApiThrottlingRateLimit:
+    Type: Number
+    Default: 10
+    Description: API Gateway steady-state request rate limit (requests per second across stage)
+
+  ApiThrottlingBurstLimit:
+    Type: Number
+    Default: 20
+    Description: API Gateway burst request rate limit (concurrent burst ceiling across stage)
+
 
 Resources:
   # ------------------------------------------
@@ -45,6 +58,12 @@ Resources:
     Properties:
       Name: !Sub "my-ai-stack-api-${Environment}"
       StageName: !Ref Environment
+      # Throttling limits applied across all methods in the stage to prevent traffic spikes and billing surprises (GL-24)
+      MethodSettings:
+        - ResourcePath: "/*"
+          HttpMethod: "*"
+          ThrottlingRateLimit: !Ref ApiThrottlingRateLimit
+          ThrottlingBurstLimit: !Ref ApiThrottlingBurstLimit
       Auth:
         DefaultAuthorizer: InternalApiAuthorizer
         Authorizers:
