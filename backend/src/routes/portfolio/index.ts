@@ -3,6 +3,7 @@ import { chat, chatStream, invokeSingleTurnPrompt, GUARDRAIL_FALLBACK } from "..
 import { buildSuggestedPrompt } from "../../prompts/portfolio.prompt";
 import { trackUserInteraction, getPortfolioStats } from "../../services/portfolioService";
 import { ChatMessage } from "../../types/portfolio";
+import { isAuthorized } from "../../utils/auth";
 
 const CONVERSATION_LIMIT = 10;
 
@@ -65,46 +66,47 @@ const portfolio: FastifyPluginAsync = async (fastify): Promise<void> => {
    *
    * GUARDRAIL_FALLBACK text: see lib/bedrock/chatOrchestrator.ts
    */
-  fastify.post<{ Body: ChatBody }>("/chat/stream", { schema: chatSchema }, async (request, reply) => {
-    trackVisitor(request);
+  fastify.post<{ Body: ChatBody }>(
+    "/chat/stream",
+    { schema: chatSchema },
+    async (request, reply) => {
+      trackVisitor(request);
 
-    reply.raw.setHeader("Content-Type", "text/event-stream; charset=utf-8");
-    reply.raw.setHeader("Cache-Control", "no-cache");
-    reply.raw.setHeader("Connection", "keep-alive");
-    reply.raw.setHeader("X-Accel-Buffering", "no"); // prevent nginx buffering
-    reply.raw.flushHeaders();
+      reply.raw.setHeader("Content-Type", "text/event-stream; charset=utf-8");
+      reply.raw.setHeader("Cache-Control", "no-cache");
+      reply.raw.setHeader("Connection", "keep-alive");
+      reply.raw.setHeader("X-Accel-Buffering", "no"); // prevent nginx buffering
+      reply.raw.flushHeaders();
 
-    const writeChunk = (data: object) => {
-      reply.raw.write(`data: ${JSON.stringify(data)}\n\n`);
-    };
+      const writeChunk = (data: object) => {
+        reply.raw.write(`data: ${JSON.stringify(data)}\n\n`);
+      };
 
-    try {
-      const truncatedMessages = request.body.messages.slice(-CONVERSATION_LIMIT);
-      const stream = chatStream(truncatedMessages);
+      try {
+        const truncatedMessages = request.body.messages.slice(-CONVERSATION_LIMIT);
+        const stream = chatStream(truncatedMessages);
 
-      for await (const chunk of stream) {
-        if (chunk.type === "guardrail") {
-          writeChunk({ type: "guardrail", fallback: GUARDRAIL_FALLBACK });
-        } else {
-          writeChunk(chunk);
+        for await (const chunk of stream) {
+          if (chunk.type === "guardrail") {
+            writeChunk({ type: "guardrail", fallback: GUARDRAIL_FALLBACK });
+          } else {
+            writeChunk(chunk);
+          }
         }
+      } catch (err) {
+        request.log.error(err);
+        writeChunk({
+          type: "error",
+          message: err instanceof Error ? err.message : "Failed to process portfolio question",
+        });
+      } finally {
+        reply.raw.end();
       }
-    } catch (err) {
-      request.log.error(err);
-      writeChunk({
-        type: "error",
-        message: err instanceof Error ? err.message : "Failed to process portfolio question",
-      });
-    } finally {
-      reply.raw.end();
     }
-  });
+  );
 
   fastify.get("/stats", {}, async (request, reply) => {
-    const receivedKey =
-      request.headers["x-internal-api-key"] || request.headers["X-Internal-Api-Key"];
-
-    if (process.env.NODE_ENV === "production" && receivedKey !== process.env.INTERNAL_API_KEY) {
+    if (!isAuthorized(request.headers)) {
       return reply.code(401).send({ error: "Unauthorized" });
     }
 
