@@ -105,3 +105,12 @@ logs/
 
 # Git worktrees
 .worktrees/
+
+########################################
+# GRAPHIFY / KNOWLEDGE GRAPH ARTIFACTS
+########################################
+graphify-out/
+.agents/knowledge-graph/*
+!.agents/knowledge-graph/.gitkeep
+.agents/knowledge-graph/.*
+!.agents/knowledge-graph/.gitkeep
