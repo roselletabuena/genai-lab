@@ -4,6 +4,7 @@
   "private": true,
   "description": "AI-native repository for GenAI exploration with Fastify backend and Next.js frontend",
   "workspaces": [
+    "packages/*",
     "backend",
     "frontend"
   ],
