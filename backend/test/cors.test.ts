@@ -50,4 +50,20 @@ describe("CORS configuration", () => {
     });
     assert.strictEqual(response.headers["access-control-allow-origin"], undefined);
   });
+
+  test("allows x-client-ip in CORS preflight request headers", async () => {
+    const response = await app.inject({
+      method: "OPTIONS",
+      url: "/",
+      headers: {
+        origin: "https://roselle.dev",
+        "access-control-request-method": "POST",
+        "access-control-request-headers": "x-client-ip",
+      },
+    });
+    assert.strictEqual(response.headers["access-control-allow-origin"], "https://roselle.dev");
+    assert.ok(
+      String(response.headers["access-control-allow-headers"]).toLowerCase().includes("x-client-ip")
+    );
+  });
 });
