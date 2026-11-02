@@ -14,7 +14,9 @@ describe("Fastify Chat Routes Payload Validation", () => {
       });
 
       assert.strictEqual(response.statusCode, 400);
-      assert.deepStrictEqual(JSON.parse(response.body), { error: "Invalid request payload" });
+      const body = JSON.parse(response.body);
+      assert.strictEqual(body.error, "Invalid request payload");
+      assert.ok(Array.isArray(body.details) && body.details.length > 0);
     });
 
     test("rejects oversized content (> 1000 chars) with HTTP 400 and does not echo input", async () => {
@@ -30,7 +32,8 @@ describe("Fastify Chat Routes Payload Validation", () => {
 
       assert.strictEqual(response.statusCode, 400);
       const body = JSON.parse(response.body);
-      assert.deepStrictEqual(body, { error: "Invalid request payload" });
+      assert.strictEqual(body.error, "Invalid request payload");
+      assert.ok(Array.isArray(body.details) && body.details.length > 0);
       // Guarantee that no user input was echoed back
       assert.strictEqual(response.body.includes(maliciousPayload), false);
     });
@@ -46,7 +49,9 @@ describe("Fastify Chat Routes Payload Validation", () => {
       });
 
       assert.strictEqual(response.statusCode, 400);
-      assert.deepStrictEqual(JSON.parse(response.body), { error: "Invalid request payload" });
+      const body = JSON.parse(response.body);
+      assert.strictEqual(body.error, "Invalid request payload");
+      assert.ok(Array.isArray(body.details) && body.details.length > 0);
       assert.strictEqual(response.body.includes("ignore instructions"), false);
     });
 
@@ -61,7 +66,9 @@ describe("Fastify Chat Routes Payload Validation", () => {
       });
 
       assert.strictEqual(response.statusCode, 400);
-      assert.deepStrictEqual(JSON.parse(response.body), { error: "Invalid request payload" });
+      const body = JSON.parse(response.body);
+      assert.strictEqual(body.error, "Invalid request payload");
+      assert.ok(Array.isArray(body.details) && body.details.length > 0);
     });
 
     test("rejects empty string content with HTTP 400", async () => {
@@ -75,7 +82,9 @@ describe("Fastify Chat Routes Payload Validation", () => {
       });
 
       assert.strictEqual(response.statusCode, 400);
-      assert.deepStrictEqual(JSON.parse(response.body), { error: "Invalid request payload" });
+      const body = JSON.parse(response.body);
+      assert.strictEqual(body.error, "Invalid request payload");
+      assert.ok(Array.isArray(body.details) && body.details.length > 0);
     });
 
     test("rejects messages array exceeding 20 messages with HTTP 400", async () => {
@@ -92,7 +101,9 @@ describe("Fastify Chat Routes Payload Validation", () => {
       });
 
       assert.strictEqual(response.statusCode, 400);
-      assert.deepStrictEqual(JSON.parse(response.body), { error: "Invalid request payload" });
+      const body = JSON.parse(response.body);
+      assert.strictEqual(body.error, "Invalid request payload");
+      assert.ok(Array.isArray(body.details) && body.details.length > 0);
     });
 
     test("rejects missing messages field with HTTP 400", async () => {
@@ -104,7 +115,9 @@ describe("Fastify Chat Routes Payload Validation", () => {
       });
 
       assert.strictEqual(response.statusCode, 400);
-      assert.deepStrictEqual(JSON.parse(response.body), { error: "Invalid request payload" });
+      const body = JSON.parse(response.body);
+      assert.strictEqual(body.error, "Invalid request payload");
+      assert.ok(Array.isArray(body.details) && body.details.length > 0);
     });
   });
 
@@ -118,7 +131,9 @@ describe("Fastify Chat Routes Payload Validation", () => {
       });
 
       assert.strictEqual(response.statusCode, 400);
-      assert.deepStrictEqual(JSON.parse(response.body), { error: "Invalid request payload" });
+      const body = JSON.parse(response.body);
+      assert.strictEqual(body.error, "Invalid request payload");
+      assert.ok(Array.isArray(body.details) && body.details.length > 0);
     });
 
     test("rejects oversized content with HTTP 400", async () => {
@@ -132,7 +147,9 @@ describe("Fastify Chat Routes Payload Validation", () => {
       });
 
       assert.strictEqual(response.statusCode, 400);
-      assert.deepStrictEqual(JSON.parse(response.body), { error: "Invalid request payload" });
+      const body = JSON.parse(response.body);
+      assert.strictEqual(body.error, "Invalid request payload");
+      assert.ok(Array.isArray(body.details) && body.details.length > 0);
     });
 
     test("rejects wrong role with HTTP 400", async () => {
@@ -146,7 +163,9 @@ describe("Fastify Chat Routes Payload Validation", () => {
       });
 
       assert.strictEqual(response.statusCode, 400);
-      assert.deepStrictEqual(JSON.parse(response.body), { error: "Invalid request payload" });
+      const body = JSON.parse(response.body);
+      assert.strictEqual(body.error, "Invalid request payload");
+      assert.ok(Array.isArray(body.details) && body.details.length > 0);
     });
 
     test("rejects non-string content with HTTP 400", async () => {
@@ -160,7 +179,9 @@ describe("Fastify Chat Routes Payload Validation", () => {
       });
 
       assert.strictEqual(response.statusCode, 400);
-      assert.deepStrictEqual(JSON.parse(response.body), { error: "Invalid request payload" });
+      const body = JSON.parse(response.body);
+      assert.strictEqual(body.error, "Invalid request payload");
+      assert.ok(Array.isArray(body.details) && body.details.length > 0);
     });
   });
 
@@ -174,7 +195,9 @@ describe("Fastify Chat Routes Payload Validation", () => {
       });
 
       assert.strictEqual(response.statusCode, 400);
-      assert.deepStrictEqual(JSON.parse(response.body), { error: "Invalid request payload" });
+      const body = JSON.parse(response.body);
+      assert.strictEqual(body.error, "Invalid request payload");
+      assert.ok(Array.isArray(body.details) && body.details.length > 0);
     });
 
     test("rejects oversized lastMessage (> 1000 chars) with HTTP 400", async () => {
@@ -189,7 +212,9 @@ describe("Fastify Chat Routes Payload Validation", () => {
       });
 
       assert.strictEqual(response.statusCode, 400);
-      assert.deepStrictEqual(JSON.parse(response.body), { error: "Invalid request payload" });
+      const body = JSON.parse(response.body);
+      assert.strictEqual(body.error, "Invalid request payload");
+      assert.ok(Array.isArray(body.details) && body.details.length > 0);
     });
 
     test("rejects empty lastMessage with HTTP 400", async () => {
@@ -204,7 +229,9 @@ describe("Fastify Chat Routes Payload Validation", () => {
       });
 
       assert.strictEqual(response.statusCode, 400);
-      assert.deepStrictEqual(JSON.parse(response.body), { error: "Invalid request payload" });
+      const body = JSON.parse(response.body);
+      assert.strictEqual(body.error, "Invalid request payload");
+      assert.ok(Array.isArray(body.details) && body.details.length > 0);
     });
 
     test("rejects invalid role inside conversation with HTTP 400", async () => {
@@ -219,7 +246,9 @@ describe("Fastify Chat Routes Payload Validation", () => {
       });
 
       assert.strictEqual(response.statusCode, 400);
-      assert.deepStrictEqual(JSON.parse(response.body), { error: "Invalid request payload" });
+      const body = JSON.parse(response.body);
+      assert.strictEqual(body.error, "Invalid request payload");
+      assert.ok(Array.isArray(body.details) && body.details.length > 0);
     });
 
     test("rejects conversation exceeding 20 messages with HTTP 400", async () => {
@@ -237,7 +266,9 @@ describe("Fastify Chat Routes Payload Validation", () => {
       });
 
       assert.strictEqual(response.statusCode, 400);
-      assert.deepStrictEqual(JSON.parse(response.body), { error: "Invalid request payload" });
+      const body = JSON.parse(response.body);
+      assert.strictEqual(body.error, "Invalid request payload");
+      assert.ok(Array.isArray(body.details) && body.details.length > 0);
     });
   });
 });
