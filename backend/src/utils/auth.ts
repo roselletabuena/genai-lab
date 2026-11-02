@@ -7,6 +7,32 @@ export type HeadersInput =
   | undefined;
 
 /**
+ * Case-insensitive lookup for a header value from various header input shapes.
+ */
+export function getHeaderValue(
+  headers?: HeadersInput,
+  targetHeaderName: string = ""
+): string | undefined {
+  if (!headers) {
+    return undefined;
+  }
+
+  const targetLower = targetHeaderName.toLowerCase();
+  for (const [key, value] of Object.entries(headers)) {
+    if (key.toLowerCase() === targetLower) {
+      if (Array.isArray(value)) {
+        return value[0];
+      }
+      if (typeof value === "string") {
+        return value;
+      }
+    }
+  }
+
+  return undefined;
+}
+
+/**
  * Validates whether incoming request headers contain a valid x-internal-api-key.
  *
  * Guarantees:
@@ -22,22 +48,7 @@ export function isAuthorized(
     return false;
   }
 
-  if (!headers) {
-    return false;
-  }
-
-  let receivedKey: string | undefined;
-  for (const [key, value] of Object.entries(headers)) {
-    if (key.toLowerCase() === "x-internal-api-key") {
-      if (Array.isArray(value)) {
-        receivedKey = value[0];
-      } else if (typeof value === "string") {
-        receivedKey = value;
-      }
-      break;
-    }
-  }
-
+  const receivedKey = getHeaderValue(headers, "x-internal-api-key");
   if (!receivedKey || receivedKey.trim() === "") {
     return false;
   }
