@@ -62,4 +62,13 @@ awslocal dynamodb create-table \
         AttributeName=userId,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
 
+echo "Creating DynamoDB table: UsageCounters-dev"
+awslocal dynamodb create-table \
+    --table-name UsageCounters-dev \
+    --attribute-definitions \
+        AttributeName=counterId,AttributeType=S \
+    --key-schema \
+        AttributeName=counterId,KeyType=HASH \
+    --billing-mode PAY_PER_REQUEST
+
 echo "LocalStack initialization complete!"

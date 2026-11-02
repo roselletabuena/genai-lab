@@ -69,6 +69,14 @@ Parameters:
     Default: 10
     Description: Monthly AWS spend limit in USD for budget alert triggers
 
+  # ------------------------------------------
+  # Daily Request Cap Settings (GL-27 / GL-28)
+  # ------------------------------------------
+  DailyChatRequestCap:
+    Type: Number
+    Default: 100
+    Description: Maximum global daily chat requests permitted across all visitors before returning a friendly cap message
+
 Conditions:
   HasBudgetEmail: !Not [!Equals [!Ref BudgetNotificationEmail, ""]]
   HasDocumentsReservedConcurrency: !Not [!Equals [!Ref DocumentsFunctionReservedConcurrency, 0]]
@@ -211,6 +219,31 @@ Resources:
           Value: !Ref Environment
 
   # ------------------------------------------
+  # Usage Counters Table (Daily Caps & Throttling - GL-27)
+  # ------------------------------------------
+  # Stores daily usage counters with TTL (48 hours) to enforce global chat caps.
+  # Atomically updated via conditional writes before any Bedrock calls.
+  UsageCountersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "UsageCounters-${Environment}"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: counterId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: counterId
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      SSESpecification:
+        SSEEnabled: true
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  # ------------------------------------------
   # Lambda Function
   # ------------------------------------------
   DocumentsFunction:
@@ -235,6 +268,8 @@ Resources:
           BEDROCK_GUARDRAIL_ID: !GetAtt PortfolioGuardrail.GuardrailId
           KNOWLEDGE_BASE_ID: !Ref PortfolioKnowledgeBase
           INTERNAL_API_KEY: !Ref InternalApiKey
+          USAGE_COUNTERS_TABLE: !Ref UsageCountersTable
+          DAILY_CHAT_REQUEST_CAP: !Ref DailyChatRequestCap
       Events:
         # Root endpoint
         RootGet:
@@ -305,6 +340,8 @@ Resources:
           BEDROCK_GUARDRAIL_ID: !GetAtt PortfolioGuardrail.GuardrailId
           KNOWLEDGE_BASE_ID: !Ref PortfolioKnowledgeBase
           INTERNAL_API_KEY: !Ref InternalApiKey
+          USAGE_COUNTERS_TABLE: !Ref UsageCountersTable
+          DAILY_CHAT_REQUEST_CAP: !Ref DailyChatRequestCap
       FunctionUrlConfig:
         AuthType: NONE
         InvokeMode: RESPONSE_STREAM
@@ -366,6 +403,7 @@ Resources:
                   - !Sub "${DocumentsTable.Arn}/index/*"
                   - !GetAtt PortfolioUsersTable.Arn
                   - !Sub "${PortfolioUsersTable.Arn}/index/*"
+                  - !GetAtt UsageCountersTable.Arn
                   - !Sub "arn:aws:bedrock:${AWS::Region}:${AWS::AccountId}:knowledge-base/*"
               - Effect: Allow
                 Action:
@@ -600,3 +638,7 @@ Outputs:
   DocumentsStreamFunctionUrl:
     Description: "Lambda Function URL for streaming chat"
     Value: !GetAtt DocumentsStreamFunctionUrl.FunctionUrl
+
+  UsageCountersTableName:
+    Description: "DynamoDB table for usage counters and daily chat request caps"
+    Value: !Ref UsageCountersTable
