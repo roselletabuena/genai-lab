@@ -62,4 +62,18 @@ jobs:
           sam deploy \
             --no-fail-on-empty-changeset \
             --no-confirm-changeset \
-            --parameter-overrides Environment="dev" AllowedOrigins="*" InternalApiKey="${{ secrets.INTERNAL_API_KEY }}"
+            --parameter-overrides Environment="dev" AllowedOrigins="https://roselle.dev,http://localhost:3000" InternalApiKey="${{ secrets.INTERNAL_API_KEY }}"
+
+      - name: Verify CORS Configuration
+        run: |
+          echo "Verifying Lambda Function URL CORS configuration..."
+          aws lambda get-function-url-config \
+            --function-name my-ai-stack-stream-dev \
+            --query "Cors" \
+            --output json
+
+          ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+          echo "Verifying S3 Bucket CORS for my-ai-stack-dev-${ACCOUNT_ID}..."
+          aws s3api get-bucket-cors \
+            --bucket "my-ai-stack-dev-${ACCOUNT_ID}" \
+            --output json
