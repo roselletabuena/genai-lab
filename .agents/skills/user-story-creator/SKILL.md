@@ -135,6 +135,8 @@ criterion or scope creep, so flag it.
 When writing several stories, list all of them with their links first, check order, direction
 and cycles on the whole set, then write each one. See `references/linking-stories.md`.
 
+**Multiple stories rule**: When drafting or creating multiple stories at once, dependencies MUST be declared as a topological DAG. When syncing to a tracker, inter-story issue link creation is a mandatory follow-up step to issue creation; never leave sibling stories disconnected in the tracker.
+
 ## 8. Run the quality gate
 
 | Check | If it fails |
@@ -159,16 +161,20 @@ only if the user asks or the repo already keeps stories in files, and say where.
 
 Only with a tracker MCP server **and** the user's approval of the final draft.
 
-1. Preview the stories, their titles and every link. Wait for a yes unless told to go ahead.
-2. Search for duplicates, then read the project's issue types and **link types** from the
-   server. Do not guess names or IDs.
-3. Create in dependency order, upstream first, so every link points at a real key. Set the
-   parent, the stack label or component, and put the story, criteria and test cases in the
-   description (or in linked test issues).
-4. **Create only.** Never edit, re-rank or close existing tickets, and never remove their links.
-5. If a call fails partway, stop, list which keys exist, and ask before retrying.
-6. Read each link back from both sides, then replace the local ORDER references in the draft
-   with the real keys.
+1. **Preview & Map**: Preview the stories, their titles, parent epic, and the complete inter-story dependency table (`Depends on`, `Blocks`, `Relates to`). Wait for a yes unless told to go ahead.
+2. **Fetch Link Types**: Search for duplicates, then read the project's issue types and **link types** from the server (e.g. `listJiraIssueLinkTypes`). Do not guess names or IDs; discover the exact link type name (e.g. "Blocks", "Relates") and inward/outward wording.
+3. **Phase 1 — Issue Creation**: Create in dependency order, upstream first, so every link points at a real key. Set the parent epic, the stack label or component, and put the story, criteria and test cases in the description. Maintain an exact mapping of `local ORDER -> newly created tracker key`.
+4. **Phase 2 — Mandatory Inter-Story Linking (Multiple Stories)**:
+   - **CRITICAL**: Creating tickets with `parent` does **NOT** link dependencies between stories. You MUST immediately invoke the tracker's linking tool (e.g. `createJiraIssueLink` via `executeWrite` in Jira with `linkType="Blocks"`, `inwardIssue: <upstreamKey>`, `outwardIssue: <downstreamKey>`) for every edge in the planned dependency table.
+   - For reciprocal links ("is blocked by"), Jira manages this automatically on the outward issue; execute one linking call per planned dependency edge.
+   - Never consider the tracker write complete until all inter-story links have succeeded.
+5. **Phase 3 — Verification & Read-back**:
+   - Query or fetch the created issues (e.g. `getJiraIssue` with `view: "evidence"`) to confirm `issuelinks` are present and pointing to the intended keys in the correct direction.
+   - If any link fails to create, report the exact missing link immediately.
+6. **Safety Rules**:
+   - **Create only.** Never edit, re-rank or close existing tickets, and never remove existing unrelated links.
+   - If a creation call fails partway, stop, list which keys exist, and ask before retrying.
+   - Replace the local ORDER references in the draft with the confirmed real keys.
 
 ## Report
 
