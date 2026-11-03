@@ -66,14 +66,11 @@ cross-references but do not enforce ordering, so say so in the report.
 
 ## Creating several stories
 
-1. Draft all stories and their links as a table like the one above, using ORDER as the local
-   reference.
+1. Draft all stories and their links as a table like the one above, using ORDER as the local reference.
 2. Check cycles, ORDER and two-way consistency across the whole set.
-3. Create in dependency order, upstream first, so each link can point at a real key. For a
-   link that cannot be made yet because the other story does not exist, record it as a planned
-   link in the story and add it when the sibling is created.
-4. Read every link back, then replace the local ORDER references in the saved draft with the
-   real keys.
+3. **Phase 1 (Create Issues)**: Create tickets in dependency order, upstream first, setting the parent epic and details. Build a map of `local ORDER -> newly created key`.
+4. **Phase 2 (Create Issue Links - Mandatory)**: For each dependency edge in the table, call the tracker's linking tool (e.g. `createJiraIssueLink` with `linkType="Blocks"`, `inwardIssue: upstream`, `outwardIssue: downstream`). Never stop after Phase 1—ticket creation does not automatically link dependencies!
+5. **Phase 3 (Verify & Read back)**: Read every link back to confirm both sides show the link, then replace the local ORDER references in the saved draft with the real keys.
 
 ## Reporting
 

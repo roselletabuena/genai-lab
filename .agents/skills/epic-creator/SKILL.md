@@ -108,17 +108,16 @@ directory, and say where you put it.
 Only when a tracker MCP server is available **and** the user has approved the final draft.
 Tickets are visible to the whole team and tedious to undo.
 
-1. Preview what will be created ("1 epic + N stories in <project>", with titles). Wait for
-   a yes unless the user already said to go ahead.
-2. Check for duplicates, then read the project's issue types and parent fields from the
-   server's metadata. Do not guess field IDs or assume the tracker has an "Epic" type.
-3. Create the epic first, then each story linked to it, in slicing order. The epic body goes
-   in the epic's description; each story's acceptance criteria in its own. Follow the
-   project's story-title convention; if `user-story-creator` is installed, use it for the
-   titles, criteria, test cases and the links between stories.
-4. **Create only.** Never edit, re-rank, transition or close existing tickets.
-5. If a call fails partway, stop, report which keys exist, and ask before retrying. A blind
-   retry creates duplicates.
+1. Preview what will be created ("1 epic + N stories in <project>", with titles, and the inter-story dependency link table). Wait for a yes unless the user already said to go ahead.
+2. Check for duplicates, then read the project's issue types, parent fields, and **link types** (e.g. `listJiraIssueLinkTypes`) from the server's metadata. Do not guess field IDs or assume the tracker has an "Epic" type.
+3. **Phase 1 — Create Epic and Child Stories**: Create the epic first, then each story linked to it via `parent` in slicing order (upstream first). Maintain a map of `local slice ID -> tracker key`. The epic body goes in the epic's description; each story's acceptance criteria in its own.
+4. **Phase 2 — Mandatory Inter-Story Linking**:
+   - Creating stories under an epic does **NOT** establish dependencies between them.
+   - You MUST immediately execute the tracker's linking tool (e.g. `createJiraIssueLink` via `executeWrite` with `linkType: "Blocks"`, `inwardIssue: <upstreamKey>`, `outwardIssue: <downstreamKey>`) for every dependency defined in the story slices.
+   - Never exit leaving child stories unlinked when inter-story dependencies were planned.
+5. **Phase 3 — Verify Link Graph**: Read back the created issues (e.g. `getJiraIssue` with `view: "evidence"`) to confirm `issuelinks` exist and the direction is correct.
+6. **Create only.** Never edit, re-rank, transition or close existing tickets.
+7. If a call fails partway, stop, report which keys exist, and ask before retrying. A blind retry creates duplicates.
 
 Field mapping for Jira and GitHub Issues is in `references/tracker-mapping.md`.
 
