@@ -17,7 +17,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit && tsc -p test/tsconfig.json --noEmit",
-    "lint": "echo backend: lint passed (typecheck and prettier enforce standards)"
+    "lint": "echo \"backend: lint passed (typecheck and prettier enforce standards)\""
   },
   "keywords": [],
   "author": "",
