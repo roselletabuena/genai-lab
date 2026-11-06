@@ -43,6 +43,15 @@ graph TD
 - **Local Emulation**: Docker Compose and LocalStack (`infra/localstack-init.sh`) simulating API Gateway, Lambda, DynamoDB, and S3.
 - **Environments**: Parameterized environment configurations in `infra/environments/`.
 
+### 1.4 `sandbox-runner/` — Isolated Docker Test Runner (Go)
+
+- **Language & Runtime**: Go (1.22+) CLI tool and runner library.
+- **Core Capabilities**:
+  - Executes test commands inside an isolated Docker container with host mounts and timeout controls.
+  - Captures test results, logs, and exit codes into a structured JSON envelope.
+  - Strict host filesystem and environment variable isolation.
+- **Testing**: Native Go testing (`go test -v ./...`).
+
 ---
 
 ## 2. Non-Negotiable Coding & Verification Conventions
@@ -124,6 +133,14 @@ sam build --template infra/template.yaml
 
 # Run local API Gateway emulation
 sam local start-api -t infra/template.yaml -p 3001
+```
+
+### 3.5 Sandbox Runner Commands (`sandbox-runner/`)
+
+```bash
+cd sandbox-runner
+go test -v ./...      # Run all Go unit and integration tests
+go run ./cmd/sandbox-runner -repo . -cmd "npm test" # Run tests in Docker sandbox
 ```
 
 ---

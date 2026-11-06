@@ -1,4 +1,4 @@
-module github.com/roselletabuena/genai-lab
+module github.com/roselletabuena/genai-lab/sandbox-runner
 
 go 1.27.3
 

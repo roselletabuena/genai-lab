@@ -16,7 +16,7 @@
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present && npm run test:go",
-    "test:go": "go test -v ./pkg/... ./cmd/...",
+    "test:go": "cd sandbox-runner && go test -v ./...",
     "build": "npm run build --workspaces --if-present",
     "graph:generate": "node scripts/generate-knowledge-graph.mjs",
     "graph:query": "node scripts/query-knowledge-graph.mjs",
