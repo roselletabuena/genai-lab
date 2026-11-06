@@ -1,0 +1,33 @@
+# Cloudflare Tunnel (cloudflared) Zero-Cost Local Ingress Configuration
+# Story: GL-58 (1.6 INFRA [Ingress] Configure zero-cost local Cloudflare Tunnel and webhook forwarding ingress)
+#
+# Usage:
+#   1. Quick Tunnel (Zero-Account / Zero-Config Free Tier):
+#      cloudflared tunnel --no-autoupdate --url http://127.0.0.1:8080
+#
+#   2. Named Tunnel (Custom Domain Free Tier):
+#      Replace <TUNNEL_UUID>, <CREDENTIALS_FILE>, and <HOSTNAME> below, then run:
+#      cloudflared tunnel --config infra/cloudflared/config.example.yml run
+
+tunnel: 00000000-0000-0000-0000-000000000000
+credentials-file: /etc/cloudflared/credentials.json
+
+# Outbound QUIC/TLS connection settings (0 inbound firewall ports required)
+protocol: quic
+no-autoupdate: true
+
+ingress:
+  # Route GitHub webhook POST requests and health checks to the local Go supervisor daemon
+  - hostname: webhooks.example.com
+    path: /webhook
+    service: http://127.0.0.1:8080
+    originRequest:
+      connectTimeout: 10s
+      noTLSVerify: true
+
+  - hostname: webhooks.example.com
+    path: /healthz
+    service: http://127.0.0.1:8080
+
+  # Catch-all rule required by cloudflared ingress validation
+  - service: http_status:404

@@ -20,6 +20,10 @@
     "test:agent": "pytest agent/tests -v",
     "lint:agent": "ruff check agent/",
     "build": "npm run build --workspaces --if-present",
+    "ingress:tunnel": "bash scripts/ingress-cloudflared.sh",
+    "ingress:gh": "bash scripts/ingress-gh-webhook.sh",
+    "stack:start": "bash scripts/start-local-stack.sh",
+    "stack:check": "bash scripts/start-local-stack.sh --check-only",
     "graph:generate": "node scripts/generate-knowledge-graph.mjs",
     "graph:query": "node scripts/query-knowledge-graph.mjs",
     "graph:verify": "node scripts/verify-knowledge-graph.mjs"
