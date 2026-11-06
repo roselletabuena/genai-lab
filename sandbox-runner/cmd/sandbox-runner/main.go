@@ -63,11 +63,15 @@ func main() {
 
 	runner := sandbox.NewRunner(dockerClient)
 	cfg := sandbox.Config{
-		RepoPath: *repoPath,
-		TestCmd:  testCmd,
-		Image:    *image,
-		Timeout:  timeout,
-		Env:      envFlags,
+		RepoPath:         *repoPath,
+		TestCmd:          testCmd,
+		Image:            *image,
+		Timeout:          timeout,
+		Env:              envFlags,
+		NetworkDisabled:  true,
+		MemoryLimitBytes: sandbox.DefaultMemoryLimitBytes,
+		NanoCPUs:         sandbox.DefaultNanoCPUs,
+		User:             sandbox.DefaultNonRootUser,
 	}
 
 	result, runErr := runner.Run(context.Background(), cfg)

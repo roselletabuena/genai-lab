@@ -9,6 +9,7 @@ An isolated Docker-based test runner CLI and webhook container supervisor writte
 ### Core Capabilities
 
 - **Isolated Docker Runner**: Runs tests inside ephemeral Docker containers with sanitized environments, host directory volume isolation, and timeouts.
+- **Security Guardrails (`pkg/sandbox/security.go`)**: Enforces hard Docker `HostConfig` resource quotas (512 MB RAM cap with swap disabled, 1.0 CPU core quota via `NanoCPUs` and CFS `CPUQuota`), outbound network isolation (`--network=none`), non-root UID execution (`1000:1000`), Linux capability dropping (`CapDrop: ALL`, `no-new-privileges:true`), and a hard 60-second execution timeout with immediate `SIGKILL`.
 - **GitHub Webhook Consumer**: Validates HMAC SHA-256 signatures via constant-time comparison, filters failing pull request events (`check_run` and `workflow_run`), and returns non-blocking HTTP responses.
 - **Git Worktree Isolation**: Dynamically provisions ephemeral `git worktree` directories off target commits, guaranteeing zero cross-contamination and immediate post-task pruning.
 - **Worker Pool Supervisor**: Bounded FIFO channel queue (capacity: 50) with HTTP 429 backpressure, supervising concurrent worker goroutines (default: 3) with execution timeouts.
