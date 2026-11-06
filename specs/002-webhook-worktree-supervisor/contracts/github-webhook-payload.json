@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GitHubWebhookPayload",
+  "description": "Schema for qualified GitHub check_run and workflow_run events triggering remediation",
+  "type": "object",
+  "required": ["action", "repository"],
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": ["completed"]
+    },
+    "check_run": {
+      "type": "object",
+      "required": ["id", "head_sha", "conclusion"],
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": "string" },
+        "head_sha": { "type": "string", "pattern": "^[0-9a-fA-F]{40}$" },
+        "status": { "type": "string", "enum": ["completed"] },
+        "conclusion": {
+          "type": "string",
+          "enum": ["failure", "timed_out", "action_required", "neutral", "success", "skipped"]
+        },
+        "pull_requests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["number", "head"],
+            "properties": {
+              "number": { "type": "integer" },
+              "head": {
+                "type": "object",
+                "required": ["ref", "sha"],
+                "properties": {
+                  "ref": { "type": "string" },
+                  "sha": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "workflow_run": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": "string" },
+        "head_sha": { "type": "string" },
+        "head_branch": { "type": "string" },
+        "conclusion": { "type": "string" },
+        "pull_requests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "number": { "type": "integer" }
+            }
+          }
+        }
+      }
+    },
+    "repository": {
+      "type": "object",
+      "required": ["full_name", "clone_url"],
+      "properties": {
+        "full_name": { "type": "string" },
+        "clone_url": { "type": "string", "format": "uri" },
+        "default_branch": { "type": "string" }
+      }
+    }
+  }
+}
