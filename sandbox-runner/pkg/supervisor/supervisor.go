@@ -4,22 +4,28 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/roselletabuena/genai-lab/sandbox-runner/pkg/audit"
+	"github.com/roselletabuena/genai-lab/sandbox-runner/pkg/github"
 	"github.com/roselletabuena/genai-lab/sandbox-runner/pkg/sandbox"
 )
 
 // Config defines the operational parameters for the worker supervisor.
 type Config struct {
-	Concurrency     int           `json:"concurrency"`
-	TaskTimeout     time.Duration `json:"task_timeout"`
-	TestCommand     []string      `json:"test_command"`
-	Image           string        `json:"image"`
-	NetworkDisabled bool          `json:"network_disabled"`
-	MockLLM         bool          `json:"mock_llm"`
+	Concurrency     int               `json:"concurrency"`
+	TaskTimeout     time.Duration     `json:"task_timeout"`
+	TestCommand     []string          `json:"test_command"`
+	Image           string            `json:"image"`
+	NetworkDisabled bool              `json:"network_disabled"`
+	MockLLM         bool              `json:"mock_llm"`
+	Commenter       *github.Commenter `json:"-"`
+	FormatterCmd    []string          `json:"formatter_cmd,omitempty"`
 }
 
 // WorktreeCreator abstracts worktree creation and teardown for the supervisor.
@@ -195,6 +201,73 @@ func (s *Supervisor) processJob(job *RemediationJob) {
 
 	if _, writeErr := s.auditWriter.Write(rec); writeErr != nil {
 		log.Printf("[supervisor] warning: failed to write audit record for %s: %v", job.ID, writeErr)
+	}
+
+	// 6. Post PR feedback comment if configured; errors never alter job status.
+	s.publishFeedback(job)
+}
+
+func (s *Supervisor) publishFeedback(job *RemediationJob) {
+	if s.cfg.Commenter == nil || s.auditWriter == nil {
+		return
+	}
+	baseDir := s.auditWriter.BaseDir()
+	prFilesPath := filepath.Join(baseDir, fmt.Sprintf("%s.pr-files.json", job.ID))
+	sessionPath := filepath.Join(baseDir, fmt.Sprintf("%s.session.json", job.ID))
+	feedbackPath := filepath.Join(baseDir, fmt.Sprintf("%s.feedback.json", job.ID))
+
+	fbCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// Step 1b: Fetch PR changed lines and write <job_id>.pr-files.json.
+	ranges, _ := s.cfg.Commenter.ChangedLines(fbCtx, job.RepoFullName, job.PullRequestNumber)
+	_ = github.WritePRFilesJSON(prFilesPath, ranges)
+
+	// Step 2: Run formatter when <job_id>.session.json exists and FormatterCmd is available.
+	if _, err := os.Stat(sessionPath); err == nil {
+		cmdArgs := s.cfg.FormatterCmd
+		if len(cmdArgs) == 0 {
+			cmdArgs = []string{"remediation-agent"}
+		}
+		fullArgs := append(append([]string{}, cmdArgs[1:]...),
+			"format-comment",
+			"--session", sessionPath,
+			"--job-id", job.ID,
+			"--pr-files", prFilesPath,
+			"--output", feedbackPath,
+		)
+		cmd := exec.CommandContext(fbCtx, cmdArgs[0], fullArgs...)
+		if runErr := cmd.Run(); runErr != nil {
+			log.Printf("[supervisor] warning: formatter failed for %s: %v", job.ID, runErr)
+		}
+	}
+
+	// Step 3: Load <job_id>.feedback.json, validate, post, and update audit record.
+	f, err := os.Open(feedbackPath)
+	if err != nil {
+		_ = s.auditWriter.Update(job.ID, audit.FeedbackOutcome{
+			Status: audit.FeedbackSkipped,
+			Reason: "no_report",
+		})
+		return
+	}
+	rep, decErr := github.DecodeReport(f)
+	_ = f.Close()
+	if decErr != nil {
+		_ = s.auditWriter.Update(job.ID, audit.FeedbackOutcome{
+			Status: audit.FeedbackSkipped,
+			Reason: "no_report",
+		})
+		return
+	}
+
+	outcome := s.cfg.Commenter.Post(fbCtx, github.PRTarget{
+		RepoFullName:      job.RepoFullName,
+		PullRequestNumber: job.PullRequestNumber,
+		HeadCommitSHA:     job.HeadCommitSHA,
+	}, rep)
+	if updErr := s.auditWriter.Update(job.ID, outcome); updErr != nil {
+		log.Printf("[supervisor] warning: failed to update audit feedback for %s: %v", job.ID, updErr)
 	}
 }
 
