@@ -63,7 +63,12 @@ func (m *Manager) Create(ctx context.Context, repoPath, commitSHA, jobID string)
 	// git worktree add --detach <worktreePath> <commitSHA>
 	_, err = m.git.Exec(ctx, absRepo, "worktree", "add", "--detach", worktreePath, commitSHA)
 	if err != nil {
-		return nil, fmt.Errorf("failed to add git worktree: %w", err)
+		// If commitSHA is not yet fetched locally (e.g. from a newly pushed PR branch), fetch from origin and retry once.
+		_, _ = m.git.Exec(ctx, absRepo, "fetch", "origin", commitSHA)
+		_, err = m.git.Exec(ctx, absRepo, "worktree", "add", "--detach", worktreePath, commitSHA)
+		if err != nil {
+			return nil, fmt.Errorf("failed to add git worktree: %w", err)
+		}
 	}
 
 	wt := &WorktreeContext{
