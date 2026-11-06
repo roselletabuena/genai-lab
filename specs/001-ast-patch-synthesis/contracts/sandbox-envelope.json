@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SandboxRunResult",
+  "description": "Structured JSON envelope emitted by the Go Docker test runner (GL-53)",
+  "type": "object",
+  "properties": {
+    "exit_code": {
+      "type": "integer",
+      "description": "Process exit code from test runner execution"
+    },
+    "stdout": {
+      "type": "string",
+      "description": "Standard output stream captured during execution"
+    },
+    "stderr": {
+      "type": "string",
+      "description": "Standard error stream captured during execution"
+    },
+    "duration_ms": {
+      "type": "integer",
+      "description": "Execution duration in milliseconds"
+    },
+    "timed_out": {
+      "type": "boolean",
+      "description": "Whether execution exceeded maximum timeout"
+    },
+    "error": {
+      "type": "string",
+      "description": "Execution or docker runner error message"
+    },
+    "container_id": {
+      "type": "string",
+      "description": "Identifier of docker container used"
+    }
+  },
+  "required": [
+    "exit_code",
+    "stdout",
+    "stderr",
+    "duration_ms",
+    "timed_out"
+  ],
+  "additionalProperties": false
+}
+

@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RemediationSessionAuditLog",
+  "description": "Structured JSON audit log emitted at the conclusion of a remediation session",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "repository_path": {
+      "type": "string"
+    },
+    "test_command": {
+      "type": "string"
+    },
+    "final_status": {
+      "type": "string",
+      "enum": ["RESOLVED", "EXHAUSTED", "ERROR"]
+    },
+    "rolled_back": {
+      "type": "boolean"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "attempts": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "properties": {
+          "attempt_number": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "DIAGNOSED",
+              "SYNTHESIZED",
+              "APPLIED",
+              "VERIFIED_SUCCESS",
+              "VERIFIED_FAILURE",
+              "FAILED_TO_APPLY"
+            ]
+          },
+          "duration_ms": {
+            "type": "integer"
+          },
+          "diagnostics": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "file_path": { "type": "string" },
+                "line_number": { "type": "integer", "minimum": 1 },
+                "error_type": { "type": "string" },
+                "message": { "type": "string" }
+              },
+              "required": ["file_path", "line_number", "error_type", "message"]
+            }
+          },
+          "patch": {
+            "type": ["object", "null"],
+            "properties": {
+              "patch_id": { "type": "string" },
+              "diff_text": { "type": "string" },
+              "target_files": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "is_applicable": { "type": "boolean" }
+            }
+          }
+        },
+        "required": ["attempt_number", "status"]
+      }
+    }
+  },
+  "required": [
+    "session_id",
+    "repository_path",
+    "test_command",
+    "final_status",
+    "rolled_back",
+    "attempts"
+  ]
+}
+
