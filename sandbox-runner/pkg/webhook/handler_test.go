@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/roselletabuena/genai-lab/sandbox-runner/pkg/webhook"
 )
@@ -155,5 +156,49 @@ func TestHealthzHandler(t *testing.T) {
 	handler.ServeHTTP(rec, req)
 	if rec.Code != http.StatusOK {
 		t.Fatalf("expected 200 OK from /healthz, got %d", rec.Code)
+	}
+}
+
+func TestWebhookHandler_CloudflareTunnelAndGHForwardHeaders_LatencyUnder100ms(t *testing.T) {
+	secret := "cloudflare-tunnel-secret"
+	enqueuer := &mockEnqueuer{
+		enqueueFn: func(event *webhook.WebhookEvent) (string, error) {
+			return "job-cf-tunnel-001", nil
+		},
+	}
+	handler := webhook.NewHandler(secret, enqueuer)
+
+	fixturePath := filepath.Join("..", "..", "testdata", "webhooks", "check_run_failure.json")
+	data, err := os.ReadFile(fixturePath)
+	if err != nil {
+		t.Fatalf("failed to read fixture: %v", err)
+	}
+
+	mac := hmac.New(sha256.New, []byte(secret))
+	mac.Write(data)
+	sig := "sha256=" + hex.EncodeToString(mac.Sum(nil))
+
+	req := httptest.NewRequest(http.MethodPost, "/webhook", strings.NewReader(string(data)))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-GitHub-Event", "check_run")
+	req.Header.Set("X-GitHub-Delivery", "cf-tunnel-deliv-001")
+	req.Header.Set("X-Hub-Signature-256", sig)
+	req.Header.Set("Cf-Connecting-Ip", "192.0.2.1")
+	req.Header.Set("Cf-Ray", "89abcdef01234567-SIN")
+	req.Header.Set("X-Forwarded-Proto", "https")
+
+	start := time.Now()
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	elapsed := time.Since(start)
+
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("expected status 202 Accepted via Cloudflare Tunnel headers, got %d (body: %s)", rec.Code, rec.Body.String())
+	}
+	if elapsed >= 100*time.Millisecond {
+		t.Errorf("expected webhook response latency < 100ms (AC3), took %v", elapsed)
+	}
+	if !strings.Contains(rec.Body.String(), "job-cf-tunnel-001") {
+		t.Errorf("expected response to contain job id, got %s", rec.Body.String())
 	}
 }

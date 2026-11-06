@@ -18,8 +18,8 @@ func TestParseConfig_Defaults(t *testing.T) {
 		t.Fatalf("unexpected error parsing default config: %v", err)
 	}
 
-	if cfg.Port != 8088 {
-		t.Errorf("expected default port 8088, got %d", cfg.Port)
+	if cfg.Port != 8080 {
+		t.Errorf("expected default port 8080, got %d", cfg.Port)
 	}
 	if cfg.Secret != "test-secret" {
 		t.Errorf("expected secret from env, got %s", cfg.Secret)
@@ -32,6 +32,9 @@ func TestParseConfig_Defaults(t *testing.T) {
 	}
 	if cfg.TaskTimeout != 10*time.Minute {
 		t.Errorf("expected default timeout 10m, got %v", cfg.TaskTimeout)
+	}
+	if cfg.MockLLM != false {
+		t.Errorf("expected default MockLLM false, got %v", cfg.MockLLM)
 	}
 }
 
@@ -48,6 +51,7 @@ func TestParseConfig_FlagsOverride(t *testing.T) {
 		"--audit-dir=/custom/audit",
 		"--image=golang:1.22",
 		"--test-cmd=go test ./...",
+		"--mock-llm",
 	}
 
 	cfg, err := parseConfig(fs, args)
@@ -55,7 +59,7 @@ func TestParseConfig_FlagsOverride(t *testing.T) {
 		t.Fatalf("unexpected error parsing flags: %v", err)
 	}
 
-	if cfg.Port != 9090 || cfg.Secret != "flag-secret" || cfg.Concurrency != 5 || cfg.QueueCapacity != 100 {
+	if cfg.Port != 9090 || cfg.Secret != "flag-secret" || cfg.Concurrency != 5 || cfg.QueueCapacity != 100 || !cfg.MockLLM {
 		t.Errorf("unexpected parsed config values: %+v", cfg)
 	}
 	if cfg.TaskTimeout != 5*time.Minute {
@@ -63,6 +67,29 @@ func TestParseConfig_FlagsOverride(t *testing.T) {
 	}
 	if cfg.BaseRepo != "/custom/repo" || cfg.WorktreeBase != "/custom/wt" || cfg.AuditDir != "/custom/audit" {
 		t.Errorf("unexpected directory config: %+v", cfg)
+	}
+}
+
+func TestParseConfig_EnvOverride(t *testing.T) {
+	_ = os.Setenv("GITHUB_WEBHOOK_SECRET", "env-secret")
+	_ = os.Setenv("DAEMON_PORT", "8088")
+	_ = os.Setenv("MOCK_LLM", "true")
+	defer func() {
+		_ = os.Unsetenv("GITHUB_WEBHOOK_SECRET")
+		_ = os.Unsetenv("DAEMON_PORT")
+		_ = os.Unsetenv("MOCK_LLM")
+	}()
+
+	fs := flag.NewFlagSet("daemon", flag.ContinueOnError)
+	cfg, err := parseConfig(fs, []string{})
+	if err != nil {
+		t.Fatalf("unexpected error parsing env config: %v", err)
+	}
+	if cfg.Port != 8088 {
+		t.Errorf("expected port 8088 from DAEMON_PORT, got %d", cfg.Port)
+	}
+	if !cfg.MockLLM {
+		t.Errorf("expected MockLLM true from MOCK_LLM=true, got %v", cfg.MockLLM)
 	}
 }
 
