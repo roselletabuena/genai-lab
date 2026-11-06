@@ -80,3 +80,4 @@ def test_parse_clean_passing_suite_returns_empty():
     parser = TestLogParser()
     diagnostics = parser.parse(envelope)
     assert diagnostics == []
+

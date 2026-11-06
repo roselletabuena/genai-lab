@@ -63,3 +63,4 @@ def test_mock_bedrock_client_returns_patch():
     assert patch.patch_id.startswith("patch-")
     assert "--- a/src/calc.py" in patch.diff_text
     assert patch.target_files == ["src/calc.py"]
+

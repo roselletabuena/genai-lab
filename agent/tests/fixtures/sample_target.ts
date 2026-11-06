@@ -8,3 +8,4 @@ export function calculateTotal(items: OrderItem[]): number {
   }
   return sum;
 }
+

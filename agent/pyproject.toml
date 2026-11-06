@@ -55,3 +55,4 @@ ignore = [
 pythonpath = ["src"]
 testpaths = ["tests"]
 addopts = "-v --strict-markers"
+

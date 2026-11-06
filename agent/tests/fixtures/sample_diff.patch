@@ -5,3 +5,4 @@
      """Calculate the sum of two integers."""
 -    return a - b  # Bug: subtraction instead of addition
 +    return a + b
+
