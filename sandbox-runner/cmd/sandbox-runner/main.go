@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/roselletabuena/genai-lab/pkg/sandbox"
+	"github.com/roselletabuena/genai-lab/sandbox-runner/pkg/sandbox"
 )
 
 type stringSliceFlag []string
