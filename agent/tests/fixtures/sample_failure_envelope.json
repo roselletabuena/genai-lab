@@ -1,0 +1,8 @@
+{
+  "exit_code": 1,
+  "stdout": "Running tests...\nFAIL test/calculate.test.ts > calculateTotal\n  AssertionError: expected 15 to equal 20\n    at calculateTotal (src/calculate.ts:14:10)\n    at test/calculate.test.ts:8:5\n\nTests: 1 failed, 0 passed, 1 total",
+  "stderr": "",
+  "duration_ms": 1250,
+  "timed_out": false,
+  "container_id": "c7f91a2b3c4d"
+}

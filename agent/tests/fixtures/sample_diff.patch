@@ -1,0 +1,7 @@
+--- a/agent/tests/fixtures/sample_target.py
++++ b/agent/tests/fixtures/sample_target.py
+@@ -6,3 +6,3 @@
+ def add_numbers(a: int, b: int) -> int:
+     """Calculate the sum of two integers."""
+-    return a - b  # Bug: subtraction instead of addition
++    return a + b
