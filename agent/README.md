@@ -57,6 +57,18 @@ remediation-agent run --cmd "npm test" --mock-llm --output-log remediation-audit
 remediation-agent run --cmd "npm test" --model-id "anthropic.claude-3-5-sonnet-20241022-v2:0"
 ```
 
+### 3. Format Pull Request Feedback Comment
+
+Render a finished `RemediationSession` audit JSON into a validated `FeedbackReport` JSON envelope (including secret redaction, head/tail log budgeting, and one-click suggestion block eligibility):
+
+```bash
+remediation-agent format-comment \
+  --session remediation-audit.json \
+  --job-id job-pr56-001 \
+  --pr-files pr-files.json \
+  --output feedback-report.json
+```
+
 ---
 
 ## Running Tests & Quality Verification

@@ -29,6 +29,7 @@ sandbox-runner/
 │       └── main_test.go     # CLI argument validation tests
 ├── pkg/
 │   ├── audit/               # JSON audit log persistence
+│   ├── github/              # GitHub REST client, report decoder, redaction & idempotent PR commenter
 │   ├── sandbox/             # Docker container orchestration & client abstraction
 │   ├── supervisor/          # Bounded job queue & worker pool supervisor
 │   ├── webhook/             # HMAC validator, payload parser & HTTP handler
@@ -133,3 +134,13 @@ curl -i -X POST http://127.0.0.1:8080/webhook \
   -H "X-Hub-Signature-256: sha256=$SIG" \
   -d "$PAYLOAD"
 ```
+
+### GitHub PR Feedback Environment Variables
+
+When the supervisor finishes a remediation job, it can post or update a single marker-tagged pull request feedback comment via `pkg/github`:
+
+| Variable | Required | Description |
+| :--- | :--- | :--- |
+| `GITHUB_TOKEN` | For live posting | Fine-grained PAT or installation token with `pull_requests: write` and `issues: write`. When unset, posting is skipped and recorded in the audit log as `skipped` (`no_credentials`). |
+| `GITHUB_API_URL` | Optional | Defaults to `https://api.github.com`. Override in tests to point at an `httptest` mock server. |
+
