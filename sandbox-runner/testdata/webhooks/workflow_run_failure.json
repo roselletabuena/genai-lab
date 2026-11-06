@@ -1,0 +1,20 @@
+{
+  "action": "completed",
+  "workflow_run": {
+    "id": 2001,
+    "name": "CI",
+    "head_sha": "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3",
+    "head_branch": "feat/GL-55-webhook-worktree-supervisor",
+    "conclusion": "failure",
+    "pull_requests": [
+      {
+        "number": 55
+      }
+    ]
+  },
+  "repository": {
+    "full_name": "roselletabuena/genai-lab",
+    "clone_url": "https://github.com/roselletabuena/genai-lab.git",
+    "default_branch": "main"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "action": "completed",
+  "check_run": {
+    "id": 1001,
+    "name": "unit-tests",
+    "head_sha": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+    "status": "completed",
+    "conclusion": "failure",
+    "pull_requests": [
+      {
+        "number": 55,
+        "head": {
+          "ref": "feat/GL-55-webhook-worktree-supervisor",
+          "sha": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2"
+        }
+      }
+    ]
+  },
+  "repository": {
+    "full_name": "roselletabuena/genai-lab",
+    "clone_url": "https://github.com/roselletabuena/genai-lab.git",
+    "default_branch": "main"
+  }
+}
