@@ -93,18 +93,18 @@
 
 ### Tests for User Story 3 (TDD - Write First)
 
-- [ ] T023 [P] [US3] Write unit tests for bounded job queue in `sandbox-runner/pkg/supervisor/queue_test.go` verifying non-blocking enqueue, channel buffer saturation detection, and FIFO dequeueing
-- [ ] T024 [P] [US3] Write unit tests for worker supervisor in `sandbox-runner/pkg/supervisor/supervisor_test.go` using `MockDockerAPI` and `MockGitExecutor` verifying concurrency limit enforcement (3 workers) and container execution orchestration
-- [ ] T025 [P] [US3] Write task timeout enforcement tests in `sandbox-runner/pkg/supervisor/supervisor_test.go` verifying container termination, status marked as `TimedOut`, worktree pruned, and audit log recorded when execution exceeds timeout limit
-- [ ] T026 [P] [US3] Write graceful shutdown tests in `sandbox-runner/pkg/supervisor/shutdown_test.go` verifying in-flight worker tasks complete and active worktrees are cleaned up upon context cancellation
+- [X] T023 [P] [US3] Write unit tests for bounded job queue in `sandbox-runner/pkg/supervisor/queue_test.go` verifying non-blocking enqueue, channel buffer saturation detection, and FIFO dequeueing
+- [X] T024 [P] [US3] Write unit tests for worker supervisor in `sandbox-runner/pkg/supervisor/supervisor_test.go` using `MockDockerAPI` and `MockGitExecutor` verifying concurrency limit enforcement (3 workers) and container execution orchestration
+- [X] T025 [P] [US3] Write task timeout enforcement tests in `sandbox-runner/pkg/supervisor/supervisor_test.go` verifying container termination, status marked as `TimedOut`, worktree pruned, and audit log recorded when execution exceeds timeout limit
+- [X] T026 [P] [US3] Write graceful shutdown tests in `sandbox-runner/pkg/supervisor/shutdown_test.go` verifying in-flight worker tasks complete and active worktrees are cleaned up upon context cancellation
 
 ### Implementation for User Story 3
 
-- [ ] T027 [US3] Implement `BoundedQueue` in `sandbox-runner/pkg/supervisor/queue.go` using `chan *RemediationJob` (capacity 50) with non-blocking enqueue returning error on saturation
-- [ ] T028 [US3] Wire HTTP 429 Too Many Requests response with `Retry-After: 60` header into `sandbox-runner/pkg/webhook/handler.go` when `BoundedQueue.Push` detects saturation
-- [ ] T029 [US3] Implement `WorkerSupervisor` in `sandbox-runner/pkg/supervisor/supervisor.go` orchestrating the worker pool: dequeueing jobs, creating worktrees via `WorktreeManager`, executing containers via `sandbox.Runner.Run()`, persisting audit records via `pkg/audit`, and deferring worktree pruning
-- [ ] T030 [US3] Implement per-task timeout enforcement and cancellation context in `sandbox-runner/pkg/supervisor/supervisor.go` terminating hanging containers after configured duration (default: 600s)
-- [ ] T031 [US3] Implement graceful worker draining and channel closure via `sync.WaitGroup` in `sandbox-runner/pkg/supervisor/supervisor.go`
+- [X] T027 [US3] Implement `BoundedQueue` in `sandbox-runner/pkg/supervisor/queue.go` using `chan *RemediationJob` (capacity 50) with non-blocking enqueue returning error on saturation
+- [X] T028 [US3] Wire HTTP 429 Too Many Requests response with `Retry-After: 60` header into `sandbox-runner/pkg/webhook/handler.go` when `BoundedQueue.Push` detects saturation
+- [X] T029 [US3] Implement `WorkerSupervisor` in `sandbox-runner/pkg/supervisor/supervisor.go` orchestrating the worker pool: dequeueing jobs, creating worktrees via `WorktreeManager`, executing containers via `sandbox.Runner.Run()`, persisting audit records via `pkg/audit`, and deferring worktree pruning
+- [X] T030 [US3] Implement per-task timeout enforcement and cancellation context in `sandbox-runner/pkg/supervisor/supervisor.go` terminating hanging containers after configured duration (default: 600s)
+- [X] T031 [US3] Implement graceful worker draining and channel closure via `sync.WaitGroup` in `sandbox-runner/pkg/supervisor/supervisor.go`
 
 **Checkpoint**: All three user stories are functional and fully integrated into the worker supervisor pipeline.
 
