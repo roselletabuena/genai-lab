@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "verdict": "failed",
+  "job_id": "job-200",
+  "session_id": "33333333-4444-5555-6666-777777777777",
+  "diagnosis": "ZeroDivisionError in `src/math_utils.py:20`: division by zero",
+  "duration_ms": 7500,
+  "attempts": [
+    {
+      "attempt_number": 1,
+      "outcome": "verified_failure",
+      "failure_reason": "ZeroDivisionError at src/math_utils.py:20: division by zero",
+      "duration_ms": 3000
+    },
+    {
+      "attempt_number": 2,
+      "outcome": "failed_to_apply",
+      "failure_reason": "patch does not apply at line 99",
+      "duration_ms": 1100
+    },
+    {
+      "attempt_number": 3,
+      "outcome": "verified_failure",
+      "failure_reason": "ZeroDivisionError at src/math_utils.py:20: expected ValueError on zero divisor",
+      "duration_ms": 3400
+    }
+  ],
+  "markdown_body": "<!-- remediation-agent:pr-feedback run=job-200 -->\n## ❌ Automated remediation could not verify a fix\n\n**Root cause (best diagnosis)**: ZeroDivisionError in `src/math_utils.py:20`: division by zero\n\n| Attempt | Result | Reason |\n| :-- | :-- | :-- |\n| 1 | Tests failed | ZeroDivisionError at src/math_utils.py:20: division by zero |\n| 2 | Patch did not apply | patch does not apply at line 99 |\n| 3 | Tests failed | ZeroDivisionError at src/math_utils.py:20: expected ValueError on zero divisor |\n\nTotal time spent: **7.5s**.\n\nNo change is proposed. Please fix this manually.\n"
+}
