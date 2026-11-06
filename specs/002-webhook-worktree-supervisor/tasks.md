@@ -47,16 +47,16 @@
 
 ### Tests for User Story 1 (TDD - Write First)
 
-- [ ] T009 [P] [US1] Write unit tests for constant-time HMAC SHA-256 verification in `sandbox-runner/pkg/webhook/validator_test.go` testing valid signatures, tampered payloads, missing headers, empty secret, and malformed hex strings
-- [ ] T010 [P] [US1] Write unit tests for GitHub webhook payload parsing in `sandbox-runner/pkg/webhook/parser_test.go` verifying extraction of commit SHA, branch name, PR number, and repository URLs from `check_run` and `workflow_run` payloads
-- [ ] T011 [P] [US1] Write HTTP handler tests in `sandbox-runner/pkg/webhook/handler_test.go` verifying 401 on bad signature, 400 on body exceeding 10MB limit, 200 on non-failing/non-PR events, and 202 on valid failing PR events
+- [X] T009 [P] [US1] Write unit tests for constant-time HMAC SHA-256 verification in `sandbox-runner/pkg/webhook/validator_test.go` testing valid signatures, tampered payloads, missing headers, empty secret, and malformed hex strings
+- [X] T010 [P] [US1] Write unit tests for GitHub webhook payload parsing in `sandbox-runner/pkg/webhook/parser_test.go` verifying extraction of commit SHA, branch name, PR number, and repository URLs from `check_run` and `workflow_run` payloads
+- [X] T011 [P] [US1] Write HTTP handler tests in `sandbox-runner/pkg/webhook/handler_test.go` verifying 401 on bad signature, 400 on body exceeding 10MB limit, 200 on non-failing/non-PR events, and 202 on valid failing PR events
 
 ### Implementation for User Story 1
 
-- [ ] T012 [US1] Implement `VerifySignature` in `sandbox-runner/pkg/webhook/validator.go` using `crypto/hmac`, `crypto/sha256`, and `crypto/subtle.ConstantTimeCompare`
-- [ ] T013 [US1] Implement `ParseEvent` in `sandbox-runner/pkg/webhook/parser.go` deserializing qualifying `check_run` (conclusion `failure`/`timed_out`) and `workflow_run` (conclusion `failure`) events per `contracts/github-webhook-payload.json`
-- [ ] T014 [US1] Implement `WebhookHandler` in `sandbox-runner/pkg/webhook/handler.go` wrapping `http.MaxBytesReader` (10MB ceiling), invoking validator, filtering events, and returning immediate JSON responses per `contracts/http-api-contract.md`
-- [ ] T015 [US1] Implement `/healthz` probe endpoint in `sandbox-runner/pkg/webhook/handler.go` reporting server health, uptime, and queue status
+- [X] T012 [US1] Implement `VerifySignature` in `sandbox-runner/pkg/webhook/validator.go` using `crypto/hmac`, `crypto/sha256`, and `crypto/subtle.ConstantTimeCompare`
+- [X] T013 [US1] Implement `ParseEvent` in `sandbox-runner/pkg/webhook/parser.go` deserializing qualifying `check_run` (conclusion `failure`/`timed_out`) and `workflow_run` (conclusion `failure`) events per `contracts/github-webhook-payload.json`
+- [X] T014 [US1] Implement `WebhookHandler` in `sandbox-runner/pkg/webhook/handler.go` wrapping `http.MaxBytesReader` (10MB ceiling), invoking validator, filtering events, and returning immediate JSON responses per `contracts/http-api-contract.md`
+- [X] T015 [US1] Implement `/healthz` probe endpoint in `sandbox-runner/pkg/webhook/handler.go` reporting server health, uptime, and queue status
 
 **Checkpoint**: User Story 1 is fully functional and independently testable (MVP delivery).
 
