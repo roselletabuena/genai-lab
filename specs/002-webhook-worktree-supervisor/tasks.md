@@ -124,9 +124,9 @@
 
 **Purpose**: Documentation, end-to-end verification, and repository quality gates.
 
-- [ ] T035 [P] Update `sandbox-runner/README.md` documenting daemon architecture, CLI flags, webhook integration guide, and sample curl commands
-- [ ] T036 Run end-to-end quickstart verification scenarios per `specs/002-webhook-worktree-supervisor/quickstart.md`
-- [ ] T037 Execute full test suite with race detector (`go test -v -race ./...` in `sandbox-runner`) and verify clean formatting across repository (`npm run verify`)
+- [X] T035 [P] Update `sandbox-runner/README.md` documenting daemon architecture, CLI flags, webhook integration guide, and sample curl commands
+- [X] T036 Run end-to-end quickstart verification scenarios per `specs/002-webhook-worktree-supervisor/quickstart.md`
+- [X] T037 Execute full test suite with race detector (`go test -v -race ./...` in `sandbox-runner`) and verify clean formatting across repository (`npm run verify`)
 
 ---
 
