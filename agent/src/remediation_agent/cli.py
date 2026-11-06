@@ -14,6 +14,7 @@ from remediation_agent.orchestrator.loop import RemediationLoop
 from remediation_agent.orchestrator.sandbox_client import SubprocessSandboxRunner
 from remediation_agent.parsers.ast_extractor import ASTScopeExtractor
 from remediation_agent.parsers.test_log_parser import TestLogParser
+from remediation_agent.reporting.command import add_format_comment_parser, handle_format_comment
 
 # Exit codes conforming to contracts/cli-contract.md
 EXIT_RESOLVED = 0
@@ -65,6 +66,9 @@ def build_parser() -> argparse.ArgumentParser:
     diag_parser.add_argument("--input", required=True, help="Path to test failure JSON envelope")
     diag_parser.add_argument("--repo", default=".", help="Repository root path")
     diag_parser.add_argument("--format", choices=["json", "text"], default="json")
+
+    # Subcommand: format-comment
+    add_format_comment_parser(subparsers)
 
     return parser
 
@@ -186,6 +190,8 @@ def main() -> None:
         sys.exit(handle_diagnose(args))
     elif args.command == "run":
         sys.exit(handle_run(args))
+    elif args.command == "format-comment":
+        sys.exit(handle_format_comment(args))
     else:
         parser.print_help()
         sys.exit(EXIT_INVALID_INPUT)
@@ -193,3 +199,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
