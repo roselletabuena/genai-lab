@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "verdict": "verified_fix",
+  "job_id": "job-102",
+  "session_id": "11111111-2222-3333-4444-555555555555",
+  "diagnosis": "AssertionError in `src/math_utils.py:8`: assert -1 == 5",
+  "duration_ms": 7300,
+  "attempts": [
+    {
+      "attempt_number": 1,
+      "outcome": "verified_success",
+      "failure_reason": null,
+      "duration_ms": 7300
+    }
+  ],
+  "diff": {
+    "unified_diff": "--- a/src/math_utils.py\n+++ b/src/math_utils.py\n@@ -6,3 +6,3 @@\n def add_numbers(a: int, b: int) -> int:\n     \"\"\"Calculate sum.\"\"\"\n-    return a - b\n+    return a + b\n",
+    "target_files": ["src/math_utils.py"],
+    "commit_url": null
+  },
+  "test_log": "3 passed in 0.12s",
+  "suggestion": {
+    "path": "src/math_utils.py",
+    "start_line": 8,
+    "line": 8,
+    "replacement": "    return a + b"
+  },
+  "markdown_body": "<!-- remediation-agent:pr-feedback run=job-102 -->\n## ✅ Automated fix verified\n\n**Root cause**: AssertionError in `src/math_utils.py:8`: assert -1 == 5\n\n### Proposed change\nA one-click suggestion with this change is attached to `src/math_utils.py` in this pull request.\n\n<details><summary>Unified diff (1 file)</summary>\n\n```diff\n--- a/src/math_utils.py\n+++ b/src/math_utils.py\n@@ -6,3 +6,3 @@\n def add_numbers(a: int, b: int) -> int:\n     \"\"\"Calculate sum.\"\"\"\n-    return a - b\n+    return a + b\n```\n\n</details>\n\n### Verification\nSandbox tests passed in **7.3s** (attempt 1 of 3)\n\n<details><summary>Test log</summary>\n\n```text\n3 passed in 0.12s\n```\n\n</details>\n"
+}
