@@ -61,6 +61,24 @@ frontend/yarn-error.log*
 # frontend/yarn.lock
 
 ########################################
+# PYTHON AGENT (agent/)
+########################################
+agent/__pycache__/
+agent/**/*.py[cod]
+agent/*.pyc
+agent/.venv/
+agent/venv/
+agent/env/
+agent/.mypy_cache/
+agent/.pytest_cache/
+agent/.ruff_cache/
+agent/.coverage
+agent/coverage.xml
+agent/dist/
+agent/build/
+*.egg-info/
+
+########################################
 # BACKEND (PYTHON + POETRY + SAM)
 ########################################
 # Python cache

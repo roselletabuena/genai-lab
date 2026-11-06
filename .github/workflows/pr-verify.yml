@@ -35,8 +35,16 @@ jobs:
           cache: true
           cache-dependency-path: sandbox-runner/go.sum
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Install dependencies
         run: npm ci
+
+      - name: Install Python Agent dependencies
+        run: pip install -e "agent/[dev]"
 
       - name: Build shared contracts
         run: npm run build --workspace=@genai-lab/contracts
