@@ -13,7 +13,7 @@ export default function Home() {
         {/* Hero Banner Area */}
         <section className="mb-8">
           <h1 className="text-[1.8rem] font-semibold text-text-primary tracking-tight leading-tight mb-2">
-            Explorations
+            Ideas & Explorations
           </h1>
           <p className="text-[0.95rem] text-text-secondary leading-relaxed">
             A collection of deep dives, code templates, and technical reflections on integrating
