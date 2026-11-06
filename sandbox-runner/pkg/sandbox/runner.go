@@ -52,36 +52,12 @@ func (r *Runner) Run(ctx context.Context, cfg Config) (*RunResult, error) {
 		return nil, ErrEmptyTestCmd
 	}
 
-	// Apply sensible defaults
-	if cfg.Image == "" {
-		cfg.Image = "node:24-alpine"
-	}
-	if cfg.Timeout <= 0 {
-		cfg.Timeout = 60 * time.Second
-	}
-	if cfg.WorkDir == "" {
-		cfg.WorkDir = "/workspace"
-	}
+	// Apply security guardrails (512 MB memory cap, 1.0 CPU core quota,
+	// 60s max timeout bound, non-root UID, and --network=none egress isolation).
+	ApplySecurityDefaults(&cfg)
 
-	// Host environment variables are strictly NOT passed through (AC4).
-	// Only explicit cfg.Env variables are provided.
-	containerEnv := make([]string, len(cfg.Env))
-	copy(containerEnv, cfg.Env)
-
-	containerConfig := &container.Config{
-		Image:           cfg.Image,
-		Cmd:             cfg.TestCmd,
-		WorkingDir:      cfg.WorkDir,
-		Env:             containerEnv,
-		NetworkDisabled: cfg.NetworkDisabled,
-		Tty:             false, // Non-TTY enables stdcopy header multiplexing for stdout & stderr
-	}
-
-	// Host isolation: bind mount only the target repo into cfg.WorkDir (AC4)
-	hostConfig := &container.HostConfig{
-		Binds:       []string{fmt.Sprintf("%s:%s", absPath, cfg.WorkDir)},
-		SecurityOpt: []string{"no-new-privileges:true"},
-	}
+	containerConfig := BuildContainerConfig(cfg)
+	hostConfig := BuildHostConfig(absPath, cfg)
 
 	createResp, err := r.api.ContainerCreate(ctx, containerConfig, hostConfig, nil, nil, "")
 	if err != nil {
