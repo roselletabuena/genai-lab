@@ -9,14 +9,14 @@
   "scripts": {
     "test": "npm run build:ts && tsc -p test/tsconfig.json && c8 node --test -r ts-node/register \"test/**/*.ts\"",
     "start": "npm run build:ts && fastify start -l info --port 3001 dist/app.js",
-    "build:ts": "tsc",
+    "build:ts": "npm run build --workspace=@genai-lab/contracts && tsc",
     "build": "npm run build:ts",
     "watch:ts": "tsc -w",
     "dev": "npm run build:ts && concurrently -k -p \"[{name}]\" -n \"TypeScript,App\" -c \"yellow.bold,cyan.bold\" \"npm:watch:ts\" \"npm:dev:start\"",
     "dev:start": "fastify start --ignore-watch=.ts$ -w -l info --port 3001 -P dist/app.js",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "tsc --noEmit && tsc -p test/tsconfig.json --noEmit",
+    "typecheck": "npm run build --workspace=@genai-lab/contracts && tsc --noEmit && tsc -p test/tsconfig.json --noEmit",
     "lint": "echo \"backend: lint passed (typecheck and prettier enforce standards)\""
   },
   "keywords": [],

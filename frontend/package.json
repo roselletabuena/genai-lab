@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "npm run build --workspace=@genai-lab/contracts && next dev",
+    "build": "npm run build --workspace=@genai-lab/contracts && next build",
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "npm run build --workspace=@genai-lab/contracts && tsc --noEmit"
   },
   "dependencies": {
     "@genai-lab/contracts": "*",
