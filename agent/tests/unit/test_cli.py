@@ -21,6 +21,13 @@ def test_cli_parser_build():
     assert args.mock_llm is True
 
 
+def test_cli_parser_mock_llm_from_env(monkeypatch):
+    monkeypatch.setenv("MOCK_LLM", "true")
+    parser = build_parser()
+    args = parser.parse_args(["run", "--cmd", "pytest"])
+    assert args.mock_llm is True
+
+
 def test_cli_diagnose_success(fixtures_dir: Path):
     parser = build_parser()
     failure_json = fixtures_dir / "sample_failure_envelope.json"
