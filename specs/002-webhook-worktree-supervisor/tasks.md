@@ -114,9 +114,9 @@
 
 **Purpose**: Assemble all components into the `daemon` binary CLI, bind HTTP routing, parse environment variables and flags, and handle OS termination signals.
 
-- [ ] T032 Write CLI flag and environment variable parsing tests in `sandbox-runner/cmd/daemon/main_test.go`
-- [ ] T033 Implement daemon entry point in `sandbox-runner/cmd/daemon/main.go` wiring `--port`, `--secret`, `--repo`, `--worktree-base`, `--audit-dir`, `--concurrency`, `--queue-size`, and `--timeout` flags per `contracts/http-api-contract.md`
-- [ ] T034 Implement OS signal listener (SIGINT, SIGTERM) in `sandbox-runner/cmd/daemon/main.go` triggering `Supervisor.Shutdown(ctx)` with a 30-second graceful drain window
+- [X] T032 Write CLI flag and environment variable parsing tests in `sandbox-runner/cmd/daemon/main_test.go`
+- [X] T033 Implement daemon entry point in `sandbox-runner/cmd/daemon/main.go` wiring `--port`, `--secret`, `--repo`, `--worktree-base`, `--audit-dir`, `--concurrency`, `--queue-size`, and `--timeout` flags per `contracts/http-api-contract.md`
+- [X] T034 Implement OS signal listener (SIGINT, SIGTERM) in `sandbox-runner/cmd/daemon/main.go` triggering `Supervisor.Shutdown(ctx)` with a 30-second graceful drain window
 
 ---
 
