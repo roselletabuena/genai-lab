@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/roselletabuena/genai-lab/sandbox-runner/pkg/audit"
+	"github.com/roselletabuena/genai-lab/sandbox-runner/pkg/github"
 	"github.com/roselletabuena/genai-lab/sandbox-runner/pkg/sandbox"
 	"github.com/roselletabuena/genai-lab/sandbox-runner/pkg/supervisor"
 	"github.com/roselletabuena/genai-lab/sandbox-runner/pkg/webhook"
@@ -118,7 +119,32 @@ func main() {
 
 	var testCmdSlice []string
 	if cfg.TestCommand != "" {
-		testCmdSlice = strings.Fields(cfg.TestCommand)
+		// Support sh -c "<script>" without breaking quoted script arguments
+		trimmed := strings.TrimSpace(cfg.TestCommand)
+		if strings.HasPrefix(trimmed, "sh -c ") {
+			script := strings.TrimSpace(strings.TrimPrefix(trimmed, "sh -c "))
+			script = strings.Trim(script, `"'`)
+			testCmdSlice = []string{"sh", "-c", script}
+		} else {
+			testCmdSlice = strings.Fields(cfg.TestCommand)
+		}
+	}
+
+	ghClient := github.NewClient(github.ClientConfig{})
+	commenter := github.NewCommenter(ghClient)
+
+	// Resolve formatter command (defaults to remediation-agent; checks ../agent/.venv/Scripts/remediation-agent.exe on Windows or ../agent/.venv/bin/remediation-agent on Unix)
+	formatterCmd := []string{"remediation-agent"}
+	for _, candidate := range []string{
+		"../agent/.venv/Scripts/remediation-agent.exe",
+		"agent/.venv/Scripts/remediation-agent.exe",
+		"../agent/.venv/bin/remediation-agent",
+		"agent/.venv/bin/remediation-agent",
+	} {
+		if _, statErr := os.Stat(candidate); statErr == nil {
+			formatterCmd = []string{candidate}
+			break
+		}
 	}
 
 	supCfg := supervisor.Config{
@@ -128,6 +154,8 @@ func main() {
 		Image:           cfg.Image,
 		NetworkDisabled: true,
 		MockLLM:         cfg.MockLLM,
+		Commenter:       commenter,
+		FormatterCmd:    formatterCmd,
 	}
 
 	sup := supervisor.NewSupervisor(supCfg, queue, runner, wtMgr, auditWriter)

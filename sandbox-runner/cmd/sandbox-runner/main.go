@@ -38,7 +38,14 @@ func main() {
 	// If extra arguments were passed after flags and -cmd was not provided, use them as cmd
 	var testCmd []string
 	if *cmdStr != "" {
-		testCmd = strings.Fields(*cmdStr)
+		trimmed := strings.TrimSpace(*cmdStr)
+		if strings.HasPrefix(trimmed, "sh -c ") {
+			script := strings.TrimSpace(strings.TrimPrefix(trimmed, "sh -c "))
+			script = strings.Trim(script, `"'`)
+			testCmd = []string{"sh", "-c", script}
+		} else {
+			testCmd = strings.Fields(*cmdStr)
+		}
 	} else if flag.NArg() > 0 {
 		testCmd = flag.Args()
 	}
