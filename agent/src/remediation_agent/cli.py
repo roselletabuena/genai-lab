@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -43,7 +44,8 @@ def build_parser() -> argparse.ArgumentParser:
     run_parser.add_argument(
         "--mock-llm",
         action="store_true",
-        help="Use deterministic mock LLM provider (offline mode)",
+        default=os.environ.get("MOCK_LLM", "").strip().lower() in ("true", "1", "yes"),
+        help="Use deterministic mock LLM provider (offline mode; or env MOCK_LLM=true)",
     )
     run_parser.add_argument(
         "--output-log",
