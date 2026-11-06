@@ -48,11 +48,8 @@ func TestSecurityGuardrails(t *testing.T) {
 		if res.NanoCPUs != expectedNanoCPUs {
 			t.Errorf("expected NanoCPUs %d (1.0 core), got %d", expectedNanoCPUs, res.NanoCPUs)
 		}
-		if res.CPUPeriod != 100_000 {
-			t.Errorf("expected CPUPeriod 100000, got %d", res.CPUPeriod)
-		}
-		if res.CPUQuota != 100_000 {
-			t.Errorf("expected CPUQuota 100000 (1.0 core), got %d", res.CPUQuota)
+		if res.CPUPeriod != 0 || res.CPUQuota != 0 {
+			t.Errorf("expected CPUPeriod and CPUQuota to be 0 when NanoCPUs is set (Docker daemon rejects both), got period=%d quota=%d", res.CPUPeriod, res.CPUQuota)
 		}
 	})
 
@@ -70,9 +67,6 @@ func TestSecurityGuardrails(t *testing.T) {
 		}
 		if hostCfg.Resources.NanoCPUs != DefaultNanoCPUs {
 			t.Errorf("expected excessive NanoCPUs to be clamped to %d, got %d", DefaultNanoCPUs, hostCfg.Resources.NanoCPUs)
-		}
-		if hostCfg.Resources.CPUQuota != DefaultCPUQuotaMicros {
-			t.Errorf("expected excessive CPUQuota to be clamped to %d, got %d", DefaultCPUQuotaMicros, hostCfg.Resources.CPUQuota)
 		}
 	})
 

@@ -122,7 +122,7 @@ func BuildContainerConfig(cfg Config) *container.Config {
 
 // BuildHostConfig constructs a hardened Docker container.HostConfig enforcing:
 //   - 512 MB Memory & MemorySwap ceiling (disabling swap overcommit)
-//   - 1.0 CPU core quota (NanoCPUs and CFS CPUQuota/CPUPeriod)
+//   - 1.0 CPU core quota via NanoCPUs (Docker Engine rejects setting NanoCPUs and CPUPeriod simultaneously)
 //   - Outbound network isolation (--network=none) when NetworkDisabled is active
 //   - Strict single-directory bind mount to cfg.WorkDir
 //   - Privilege escalation prevention (no-new-privileges:true and CapDrop ALL)
@@ -135,11 +135,6 @@ func BuildHostConfig(absRepoPath string, cfg Config) *container.HostConfig {
 		networkMode = NetworkModeNone
 	}
 
-	cpuQuota := (cfg.NanoCPUs * DefaultCPUPeriodMicros) / DefaultNanoCPUs
-	if cpuQuota <= 0 || cpuQuota > DefaultCPUQuotaMicros {
-		cpuQuota = DefaultCPUQuotaMicros
-	}
-
 	return &container.HostConfig{
 		Binds:       []string{fmt.Sprintf("%s:%s", cleanRepoPath, cfg.WorkDir)},
 		NetworkMode: networkMode,
@@ -149,8 +144,6 @@ func BuildHostConfig(absRepoPath string, cfg Config) *container.HostConfig {
 			Memory:     cfg.MemoryLimitBytes,
 			MemorySwap: cfg.MemoryLimitBytes,
 			NanoCPUs:   cfg.NanoCPUs,
-			CPUPeriod:  DefaultCPUPeriodMicros,
-			CPUQuota:   cpuQuota,
 		},
 	}
 }
