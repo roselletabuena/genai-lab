@@ -17,10 +17,10 @@
 
 **Purpose**: Directory scaffolding, package setup, test fixtures, and shared development tooling in `sandbox-runner`.
 
-- [ ] T001 Create package directory structure in `sandbox-runner/cmd/daemon`, `sandbox-runner/pkg/webhook`, `sandbox-runner/pkg/worktree`, `sandbox-runner/pkg/supervisor`, and `sandbox-runner/pkg/audit`
-- [ ] T002 [P] Create mock webhook test fixtures in `sandbox-runner/testdata/webhooks/check_run_failure.json` matching `contracts/github-webhook-payload.json`
-- [ ] T003 [P] Create mock webhook test fixtures in `sandbox-runner/testdata/webhooks/check_run_success.json` and `sandbox-runner/testdata/webhooks/workflow_run_failure.json`
-- [ ] T004 [P] Create sample git repository fixture helper in `sandbox-runner/testdata/helpers.go` for worktree integration tests
+- [X] T001 Create package directory structure in `sandbox-runner/cmd/daemon`, `sandbox-runner/pkg/webhook`, `sandbox-runner/pkg/worktree`, `sandbox-runner/pkg/supervisor`, and `sandbox-runner/pkg/audit`
+- [X] T002 [P] Create mock webhook test fixtures in `sandbox-runner/testdata/webhooks/check_run_failure.json` matching `contracts/github-webhook-payload.json`
+- [X] T003 [P] Create mock webhook test fixtures in `sandbox-runner/testdata/webhooks/check_run_success.json` and `sandbox-runner/testdata/webhooks/workflow_run_failure.json`
+- [X] T004 [P] Create sample git repository fixture helper in `sandbox-runner/testdata/helpers.go` for worktree integration tests
 
 ---
 
@@ -30,10 +30,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this foundational phase is complete.
 
-- [ ] T005 [P] Implement core webhook domain types and event structures in `sandbox-runner/pkg/webhook/types.go` (`WebhookEvent` with `EventType`, `DeliveryID`, `Signature`, `RepositoryURL`, `RepoFullName`, `TargetBranch`, `HeadCommitSHA`, `PullRequestNumber`, `CheckRunConclusion`)
-- [ ] T006 [P] Implement supervisor job models and state transitions in `sandbox-runner/pkg/supervisor/types.go` (`RemediationJob` with status enum `Queued`, `Running`, `Completed`, `Failed`, `TimedOut`, and `WorktreeContext`)
-- [ ] T007 [P] Implement JSON audit envelope writer in `sandbox-runner/pkg/audit/audit.go` adhering to `contracts/job-audit-schema.json` (`AuditRecord` persisting to `--audit-dir/<job_id>.json`)
-- [ ] T008 Write unit tests for domain model serialization and audit file writing in `sandbox-runner/pkg/audit/audit_test.go`
+- [X] T005 [P] Implement core webhook domain types and event structures in `sandbox-runner/pkg/webhook/types.go` (`WebhookEvent` with `EventType`, `DeliveryID`, `Signature`, `RepositoryURL`, `RepoFullName`, `TargetBranch`, `HeadCommitSHA`, `PullRequestNumber`, `CheckRunConclusion`)
+- [X] T006 [P] Implement supervisor job models and state transitions in `sandbox-runner/pkg/supervisor/types.go` (`RemediationJob` with status enum `Queued`, `Running`, `Completed`, `Failed`, `TimedOut`, and `WorktreeContext`)
+- [X] T007 [P] Implement JSON audit envelope writer in `sandbox-runner/pkg/audit/audit.go` adhering to `contracts/job-audit-schema.json` (`AuditRecord` persisting to `--audit-dir/<job_id>.json`)
+- [X] T008 Write unit tests for domain model serialization and audit file writing in `sandbox-runner/pkg/audit/audit_test.go`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin.
 
