@@ -154,6 +154,7 @@ def handle_run(args: argparse.Namespace) -> int:
     sandbox = SubprocessSandboxRunner(
         repo_path=repo_root,
         sandbox_bin=args.sandbox_bin,
+        image=os.environ.get("CONTAINER_IMAGE", "node:24-alpine"),
     )
 
     loop = RemediationLoop(
