@@ -37,6 +37,13 @@ frontend/node_modules/
 backend/node_modules/
 
 ########################################
+# BUILD OUTPUTS & WORKSPACES
+########################################
+dist/
+packages/*/dist/
+packages/**/dist/
+
+########################################
 # FRONTEND (VITE + REACT + TS)
 ########################################
 # build output
