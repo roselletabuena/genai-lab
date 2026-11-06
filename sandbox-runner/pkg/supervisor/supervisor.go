@@ -2,11 +2,13 @@ package supervisor
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -151,6 +153,20 @@ func (s *Supervisor) processJob(job *RemediationJob) {
 	result, err := s.runner.Run(taskCtx, runCfg)
 	job.FinishedAt = time.Now().UTC()
 
+	// 3b. Copy any remediation-audit.json generated inside the worktree to <auditDir>/<job.ID>.session.json
+	// before the deferred worktree prune executes. If the sandbox container failed and no session file was
+	// produced yet, invoke remediation-agent on the worktree when FormatterCmd is configured.
+	if s.auditWriter != nil {
+		destSessionFile := filepath.Join(s.auditWriter.BaseDir(), fmt.Sprintf("%s.session.json", job.ID))
+		wtSessionFile := filepath.Join(wt.WorktreePath, "remediation-audit.json")
+		if rawSession, readErr := os.ReadFile(wtSessionFile); readErr == nil {
+			_ = os.MkdirAll(s.auditWriter.BaseDir(), 0o755)
+			_ = os.WriteFile(destSessionFile, rawSession, 0o644)
+		} else if result != nil && result.ExitCode != 0 && len(s.cfg.FormatterCmd) > 0 {
+			s.runAgentRemediationLoop(taskCtx, wt.WorktreePath, result, destSessionFile)
+		}
+	}
+
 	// 4. Determine final job status
 	var (
 		exitCode   int
@@ -269,6 +285,48 @@ func (s *Supervisor) publishFeedback(job *RemediationJob) {
 	if updErr := s.auditWriter.Update(job.ID, outcome); updErr != nil {
 		log.Printf("[supervisor] warning: failed to update audit feedback for %s: %v", job.ID, updErr)
 	}
+}
+
+func (s *Supervisor) runAgentRemediationLoop(ctx context.Context, worktreePath string, initialResult *sandbox.RunResult, destSessionFile string) {
+	if s.auditWriter == nil || len(s.cfg.FormatterCmd) == 0 {
+		return
+	}
+	_ = os.MkdirAll(s.auditWriter.BaseDir(), 0o755)
+	initFailurePath := destSessionFile + ".initial.json"
+	rawInit, err := json.Marshal(initialResult)
+	if err != nil {
+		return
+	}
+	if err := os.WriteFile(initFailurePath, rawInit, 0o644); err != nil {
+		return
+	}
+	defer func() { _ = os.Remove(initFailurePath) }()
+
+	cmdArgs := s.cfg.FormatterCmd
+	var testCmdStr string
+	if len(s.cfg.TestCommand) >= 3 && s.cfg.TestCommand[0] == "sh" && s.cfg.TestCommand[1] == "-c" {
+		testCmdStr = fmt.Sprintf("sh -c %q", s.cfg.TestCommand[2])
+	} else {
+		testCmdStr = strings.Join(s.cfg.TestCommand, " ")
+	}
+	fullArgs := append(append([]string{}, cmdArgs[1:]...),
+		"run",
+		"--repo", worktreePath,
+		"--cmd", testCmdStr,
+		"--initial-failure", initFailurePath,
+		"--output-log", destSessionFile,
+	)
+	if s.cfg.MockLLM {
+		fullArgs = append(fullArgs, "--mock-llm")
+	}
+	if _, statErr := os.Stat("sandbox-runner.exe"); statErr == nil {
+		if absBin, absErr := filepath.Abs("sandbox-runner.exe"); absErr == nil {
+			fullArgs = append(fullArgs, "--sandbox-bin", absBin)
+		}
+	}
+	cmd := exec.CommandContext(ctx, cmdArgs[0], fullArgs...)
+	cmd.Env = append(os.Environ(), fmt.Sprintf("CONTAINER_IMAGE=%s", s.cfg.Image))
+	_ = cmd.Run()
 }
 
 func (s *Supervisor) recordFailure(job *RemediationJob, err error) {
