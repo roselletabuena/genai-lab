@@ -27,6 +27,7 @@ type mockDockerAPI struct {
 	activeCount  int32
 	maxActive    int32
 	simulateWait time.Duration
+	lastEnv      []string
 }
 
 func (m *mockDockerAPI) ContainerCreate(
@@ -38,6 +39,9 @@ func (m *mockDockerAPI) ContainerCreate(
 	containerName string,
 ) (container.CreateResponse, error) {
 	atomic.AddInt32(&m.createCount, 1)
+	if config != nil {
+		m.lastEnv = config.Env
+	}
 	cur := atomic.AddInt32(&m.activeCount, 1)
 	for {
 		max := atomic.LoadInt32(&m.maxActive)
@@ -211,6 +215,80 @@ func TestSupervisor_TaskTimeoutEnforcement(t *testing.T) {
 	auditFile := filepath.Join(auditDir, "job-timeout-1.json")
 	if _, err := os.Stat(auditFile); err != nil {
 		t.Fatalf("expected audit file for timed out job: %v", err)
+	}
+
+	_ = sup.Shutdown(context.Background())
+}
+
+func TestSupervisor_MockLLMEnvironmentInjection(t *testing.T) {
+	repoDir, cleanupRepo := testdata.CreateTestGitRepo(t)
+	defer cleanupRepo()
+
+	tempBase, err := os.MkdirTemp("", "sup-wt-mockllm-*")
+	if err != nil {
+		t.Fatalf("failed to create wt base: %v", err)
+	}
+	defer os.RemoveAll(tempBase)
+
+	auditDir, err := os.MkdirTemp("", "sup-audit-mockllm-*")
+	if err != nil {
+		t.Fatalf("failed to create audit base: %v", err)
+	}
+	defer os.RemoveAll(auditDir)
+
+	mockDocker := &mockDockerAPI{}
+	runner := sandbox.NewRunner(mockDocker)
+	wtMgr := worktree.NewManager(tempBase, worktree.NewOSGitExecutor())
+	auditWriter := audit.NewWriter(auditDir)
+	queue := supervisor.NewBoundedQueue(5)
+
+	cfg := supervisor.Config{
+		Concurrency: 1,
+		TaskTimeout: 5 * time.Second,
+		TestCommand: []string{"remediation-agent", "run", "--cmd", "npm test", "--mock-llm"},
+		Image:       "node:24-alpine",
+		MockLLM:     true,
+	}
+
+	sup := supervisor.NewSupervisor(cfg, queue, runner, wtMgr, auditWriter)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	sup.Start(ctx)
+
+	job := &supervisor.RemediationJob{
+		ID:                "job-mockllm-1",
+		RepoURL:           repoDir,
+		RepoFullName:      "roselletabuena/genai-lab",
+		HeadCommitSHA:     "HEAD",
+		PullRequestNumber: 58,
+		Status:            supervisor.StatusQueued,
+	}
+	_ = queue.Push(job)
+
+	deadline := time.Now().Add(3 * time.Second)
+	auditFile := filepath.Join(auditDir, "job-mockllm-1.json")
+	for {
+		if _, err := os.Stat(auditFile); err == nil || time.Now().After(deadline) {
+			break
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+
+	if _, err := os.Stat(auditFile); err != nil {
+		t.Fatalf("expected audit file for mock-llm job: %v", err)
+	}
+
+	foundMockLLMEnv := false
+	for _, envVar := range mockDocker.lastEnv {
+		if envVar == "MOCK_LLM=true" {
+			foundMockLLMEnv = true
+			break
+		}
+	}
+	if !foundMockLLMEnv {
+		t.Errorf("expected MOCK_LLM=true in container env when MockLLM is enabled, got %v", mockDocker.lastEnv)
 	}
 
 	_ = sup.Shutdown(context.Background())

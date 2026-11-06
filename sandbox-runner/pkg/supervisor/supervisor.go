@@ -19,6 +19,7 @@ type Config struct {
 	TestCommand     []string      `json:"test_command"`
 	Image           string        `json:"image"`
 	NetworkDisabled bool          `json:"network_disabled"`
+	MockLLM         bool          `json:"mock_llm"`
 }
 
 // WorktreeCreator abstracts worktree creation and teardown for the supervisor.
@@ -127,11 +128,17 @@ func (s *Supervisor) processJob(job *RemediationJob) {
 	}()
 
 	// 3. Execute container test runner
+	var containerEnv []string
+	if s.cfg.MockLLM {
+		containerEnv = append(containerEnv, "MOCK_LLM=true")
+	}
+
 	runCfg := sandbox.Config{
 		RepoPath:        wt.WorktreePath,
 		TestCmd:         s.cfg.TestCommand,
 		Image:           s.cfg.Image,
 		Timeout:         s.cfg.TaskTimeout,
+		Env:             containerEnv,
 		NetworkDisabled: s.cfg.NetworkDisabled,
 	}
 

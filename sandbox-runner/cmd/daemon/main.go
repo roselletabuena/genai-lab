@@ -32,6 +32,7 @@ type DaemonConfig struct {
 	TaskTimeout   time.Duration
 	Image         string
 	TestCommand   string
+	MockLLM       bool
 }
 
 func envOrDefault(key, fallback string) string {
@@ -41,19 +42,42 @@ func envOrDefault(key, fallback string) string {
 	return fallback
 }
 
+func envIntOrDefault(key string, fallback int) int {
+	if val := os.Getenv(key); val != "" {
+		var parsed int
+		if _, err := fmt.Sscanf(val, "%d", &parsed); err == nil && parsed > 0 {
+			return parsed
+		}
+	}
+	return fallback
+}
+
+func envBoolOrDefault(key string, fallback bool) bool {
+	if val := strings.ToLower(strings.TrimSpace(os.Getenv(key))); val != "" {
+		if val == "true" || val == "1" || val == "yes" {
+			return true
+		}
+		if val == "false" || val == "0" || val == "no" {
+			return false
+		}
+	}
+	return fallback
+}
+
 func parseConfig(fs *flag.FlagSet, args []string) (*DaemonConfig, error) {
 	cfg := &DaemonConfig{}
 
-	fs.IntVar(&cfg.Port, "port", 8088, "HTTP server listening port")
+	fs.IntVar(&cfg.Port, "port", envIntOrDefault("DAEMON_PORT", 8080), "HTTP server listening port")
 	fs.StringVar(&cfg.Secret, "secret", envOrDefault("GITHUB_WEBHOOK_SECRET", ""), "HMAC SHA-256 webhook secret (or env GITHUB_WEBHOOK_SECRET)")
 	fs.StringVar(&cfg.BaseRepo, "repo", envOrDefault("BASE_REPO_PATH", "."), "Host path to base git repository")
 	fs.StringVar(&cfg.WorktreeBase, "worktree-base", envOrDefault("WORKTREE_BASE_DIR", filepathDefaultWorktrees()), "Host path for ephemeral git worktrees")
 	fs.StringVar(&cfg.AuditDir, "audit-dir", envOrDefault("AUDIT_DIR", "./audit-logs"), "Directory where JSON audit records are persisted")
-	fs.IntVar(&cfg.Concurrency, "concurrency", 3, "Maximum concurrent worker container tasks")
-	fs.IntVar(&cfg.QueueCapacity, "queue-size", 50, "Capacity of bounded job queue")
+	fs.IntVar(&cfg.Concurrency, "concurrency", envIntOrDefault("WORKER_CONCURRENCY", 3), "Maximum concurrent worker container tasks")
+	fs.IntVar(&cfg.QueueCapacity, "queue-size", envIntOrDefault("QUEUE_CAPACITY", 50), "Capacity of bounded job queue")
 	fs.DurationVar(&cfg.TaskTimeout, "timeout", 10*time.Minute, "Per-task container execution timeout")
 	fs.StringVar(&cfg.Image, "image", envOrDefault("CONTAINER_IMAGE", "node:24-alpine"), "Container image for test execution")
 	fs.StringVar(&cfg.TestCommand, "test-cmd", envOrDefault("TEST_COMMAND", "npm test"), "Default test command executed in sandbox")
+	fs.BoolVar(&cfg.MockLLM, "mock-llm", envBoolOrDefault("MOCK_LLM", false), "Enable offline mock LLM mode for zero-cost local remediation testing")
 
 	if err := fs.Parse(args); err != nil {
 		return nil, err
@@ -103,6 +127,7 @@ func main() {
 		TestCommand:     testCmdSlice,
 		Image:           cfg.Image,
 		NetworkDisabled: true,
+		MockLLM:         cfg.MockLLM,
 	}
 
 	sup := supervisor.NewSupervisor(supCfg, queue, runner, wtMgr, auditWriter)
@@ -111,7 +136,7 @@ func main() {
 	defer rootCancel()
 
 	sup.Start(rootCtx)
-	log.Printf("[daemon] worker supervisor started with %d workers (queue size: %d, timeout: %v)", cfg.Concurrency, cfg.QueueCapacity, cfg.TaskTimeout)
+	log.Printf("[daemon] worker supervisor started with %d workers (queue size: %d, timeout: %v, mock-llm: %v)", cfg.Concurrency, cfg.QueueCapacity, cfg.TaskTimeout, cfg.MockLLM)
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.Port),
