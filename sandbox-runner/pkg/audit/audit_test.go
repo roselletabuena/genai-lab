@@ -70,3 +70,68 @@ func TestAuditWriter_Write_ValidationErrors(t *testing.T) {
 		t.Errorf("expected error for empty JobID, got nil")
 	}
 }
+
+func TestAuditWriter_FeedbackOmittedWhenNilAndPersistedOnUpdate(t *testing.T) {
+	tempDir := t.TempDir()
+	writer := audit.NewWriter(tempDir)
+
+	rec := &audit.Record{
+		JobID:             "job-fb-1",
+		RepoFullName:      "org/repo",
+		PullRequestNumber: 12,
+		CommitSHA:         "deadbeef",
+		Status:            "Completed",
+		ExitCode:          0,
+		DurationMs:        120,
+		Timestamp:         time.Now().UTC(),
+	}
+	filePath, err := writer.Write(rec)
+	if err != nil {
+		t.Fatalf("Write failed: %v", err)
+	}
+
+	raw, err := os.ReadFile(filePath)
+	if err != nil {
+		t.Fatalf("ReadFile failed: %v", err)
+	}
+	var rawMap map[string]any
+	if err := json.Unmarshal(raw, &rawMap); err != nil {
+		t.Fatalf("Unmarshal failed: %v", err)
+	}
+	if _, hasFeedback := rawMap["feedback"]; hasFeedback {
+		t.Errorf("expected feedback field omitted when nil, got %v", rawMap["feedback"])
+	}
+
+	summaryID := int64(9001)
+	suggID := int64(9002)
+	outcome := audit.FeedbackOutcome{
+		Status:              audit.FeedbackPosted,
+		SummaryCommentID:    &summaryID,
+		SuggestionCommentID: &suggID,
+		Attempts:            1,
+	}
+	if err := writer.Update("job-fb-1", outcome); err != nil {
+		t.Fatalf("Update failed: %v", err)
+	}
+
+	updatedRaw, err := os.ReadFile(filePath)
+	if err != nil {
+		t.Fatalf("ReadFile after Update failed: %v", err)
+	}
+	var updated audit.Record
+	if err := json.Unmarshal(updatedRaw, &updated); err != nil {
+		t.Fatalf("Unmarshal updated failed: %v", err)
+	}
+	if updated.Feedback == nil {
+		t.Fatalf("expected Feedback populated after Update")
+	}
+	if updated.Feedback.Status != audit.FeedbackPosted || updated.Feedback.Attempts != 1 {
+		t.Errorf("unexpected Feedback: %+v", updated.Feedback)
+	}
+	if updated.Feedback.SummaryCommentID == nil || *updated.Feedback.SummaryCommentID != 9001 {
+		t.Errorf("unexpected SummaryCommentID: %v", updated.Feedback.SummaryCommentID)
+	}
+	if updated.Feedback.SuggestionCommentID == nil || *updated.Feedback.SuggestionCommentID != 9002 {
+		t.Errorf("unexpected SuggestionCommentID: %v", updated.Feedback.SuggestionCommentID)
+	}
+}
