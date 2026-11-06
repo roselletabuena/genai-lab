@@ -70,16 +70,16 @@
 
 ### Tests for User Story 2 (TDD - Write First)
 
-- [ ] T016 [P] [US2] Write unit tests for `GitExecutor` command builder in `sandbox-runner/pkg/worktree/executor_test.go` validating arguments for `git worktree add`, `git worktree remove --force`, and `git worktree prune`
-- [ ] T017 [P] [US2] Write unit tests for `WorktreeManager` in `sandbox-runner/pkg/worktree/manager_test.go` validating isolated directory generation under `--worktree-base`, branch isolation, and error handling for invalid commit SHAs
-- [ ] T018 [P] [US2] Write cleanup and pruning tests in `sandbox-runner/pkg/worktree/manager_test.go` verifying worktree removal on task completion, failure, and locked file retries
+- [X] T016 [P] [US2] Write unit tests for `GitExecutor` command builder in `sandbox-runner/pkg/worktree/executor_test.go` validating arguments for `git worktree add`, `git worktree remove --force`, and `git worktree prune`
+- [X] T017 [P] [US2] Write unit tests for `WorktreeManager` in `sandbox-runner/pkg/worktree/manager_test.go` validating isolated directory generation under `--worktree-base`, branch isolation, and error handling for invalid commit SHAs
+- [X] T018 [P] [US2] Write cleanup and pruning tests in `sandbox-runner/pkg/worktree/manager_test.go` verifying worktree removal on task completion, failure, and locked file retries
 
 ### Implementation for User Story 2
 
-- [ ] T019 [US2] Define `GitExecutor` interface and `OSGitExecutor` in `sandbox-runner/pkg/worktree/executor.go` executing git commands via `os/exec` with context cancellation
-- [ ] T020 [US2] Implement `WorktreeManager` in `sandbox-runner/pkg/worktree/manager.go` implementing `Create(ctx context.Context, repoPath, commitSHA, jobID string) (*WorktreeContext, error)`
-- [ ] T021 [US2] Implement `Prune(ctx context.Context, wt *WorktreeContext) error` in `sandbox-runner/pkg/worktree/manager.go` executing `git worktree remove --force` followed by filesystem directory cleanup
-- [ ] T022 [US2] Add directory sweep and error logging fallback in `sandbox-runner/pkg/worktree/manager.go` to ensure zero orphaned directories remain even if git commands fail
+- [X] T019 [US2] Define `GitExecutor` interface and `OSGitExecutor` in `sandbox-runner/pkg/worktree/executor.go` executing git commands via `os/exec` with context cancellation
+- [X] T020 [US2] Implement `WorktreeManager` in `sandbox-runner/pkg/worktree/manager.go` implementing `Create(ctx context.Context, repoPath, commitSHA, jobID string) (*WorktreeContext, error)`
+- [X] T021 [US2] Implement `Prune(ctx context.Context, wt *WorktreeContext) error` in `sandbox-runner/pkg/worktree/manager.go` executing `git worktree remove --force` followed by filesystem directory cleanup
+- [X] T022 [US2] Add directory sweep and error logging fallback in `sandbox-runner/pkg/worktree/manager.go` to ensure zero orphaned directories remain even if git commands fail
 
 **Checkpoint**: User Story 2 provides isolated, leak-free worktree lifecycles for concurrent jobs.
 
