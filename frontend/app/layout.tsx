@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: "Ideas & Explorations | AI & Cloud Technical Portfolio",
   description:
     "A curated collection of technical explorations covering agentic workflows, RAG pipelines, cloud architectures, and structured LLM extraction.",
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+  },
 };
 
 export default function RootLayout({

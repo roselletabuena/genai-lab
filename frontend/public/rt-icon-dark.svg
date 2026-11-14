@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="RT">
+  <rect width="512" height="512" rx="112" fill="#0A0A0A"/>
+  <g fill="#FFFFFF" transform="translate(256 256) scale(1.55) translate(-256 -264)">
+    <path fill-rule="evenodd" d="M132 140H188C222 140 244 162 244 192C244 222 222 244 188 244H176V326H132ZM176 180H188C196 180 200 186 200 192C200 198 196 204 188 204H176Z"/>
+    <path d="M184 228H226L244 326H200Z"/>
+    <path d="M268 140H380V180H346V326H302V180H268Z"/>
+    <rect x="132" y="354" width="96" height="34"/>
+  </g>
+</svg>
